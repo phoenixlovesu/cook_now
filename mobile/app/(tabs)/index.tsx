@@ -1,57 +1,82 @@
-import { Image, Platform, StyleSheet } from 'react-native';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
-import { HelloWave } from '@/components/hello-wave';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { useRouter } from 'expo-router';
+import {Colors, Fonts } from '@/constants/theme';
 
 export default function HomeScreen() {
+  const router = useRouter();
+
+  // Sample data for recipes (empty at start)
+  const recipes: { name: string }[] = [];
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      // Tiny placeholder image to satisfy TypeScript
-      headerImage={<Image source={{ uri: 'https://via.placeholder.com/1' }} style={{ width: 1, height: 1 }} />}
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome to Cook Now!</ThemedText>
-        <HelloWave />
-      </ThemedView>
+    <View style={styles.container}>
+      <text style={styles.title}>Your Recipes</text>
 
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Add ingredients</ThemedText>
-        <ThemedText>
-          Start by adding what you have in your fridge and pantry to see what you can cook today!
-        </ThemedText>
-      </ThemedView>
-
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore Recipes</ThemedText>
-          </Link.Trigger>
-        </Link>
-        <ThemedText>Tap here to see recipe suggestions based on your ingredients</ThemedText>
-      </ThemedView>
-
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get started</ThemedText>
-        <ThemedText>
-          When ready, MVP will soon connect to the backend to generate recipes and grocery lists automatically
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {recipes.length === 0 ? (
+        <View style={styles.empty}> 
+          <Text style={styles.emptyText}>No recipes yet</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.push('/(tabs)/add-recipe')}
+            >
+              <Text style={styles.buttonText}>Add recipe</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        // renders a scrollable list
+        <FlatList
+          data={recipes} // recipe array
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.recipeItem}>
+              <Text style={styles.recipeName}>{item.name}</Text>
+            </View>
+          )}
+          />
+        )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 50,
+    backgroundColor: Colors.light.background,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 16,
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    fontFamily: Fonts.sans,
+    marginBottom: 24,
+  },
+  empty: {
+    alignItems: 'center',
+    marginTop: 100,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: Colors.light.text,
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: Colors.light.tint,
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+  buttonText: {
+    color: Colors.light.background,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  recipeItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  recipeName: {
+    fontSize: 18,
   },
 });

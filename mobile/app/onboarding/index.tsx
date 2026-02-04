@@ -4,24 +4,32 @@ import {
   StyleSheet, 
   ScrollView, 
   Dimensions, 
-  TouchableOpacity
+  TouchableOpacity,
+  ImageBackground
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { Colors, Fonts } from '@/constants/theme';
 
 // Get the device screen width; onboarding pages takes up the full screen
 const { width } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
   const router = useRouter();
-
-  // Track which onboarding page is active - for dots
+  // Track current page for dots
   const [pageIndex, setPageIndex] = useState(0);
 
   // Sends user to main app with replace(); prevents user going back to onboarding
   const goToApp = () => {
     router.replace('/(tabs)');
   };
+
+  // Placeholder background images
+  const backgrounds = [
+    require('@/assets/images/onboarding1.jpg'),
+    require('@/assets/images/onboarding2.jpg'),
+    require('@/assets/images/onboarding3.jpg'),
+  ];
 
   return (
     <View style={styles.container}>
@@ -44,54 +52,50 @@ export default function OnboardingScreen() {
         }}
         scrollEventThrottle={16} // onScroll fires every 16 milliseconds
       >
+        {backgrounds.map((bg, i) => (
 
-        {/* --------- Page 1 -----------*/}
-        <View style={styles.page}>
-          <View style={styles.branding}>
-            <Text style={styles.appTitle}>cook now</Text>
-            <Text style={styles.welcome}>Welcome</Text>
-          </View>
-          
-          <View style={styles.textBlock}>
-            <Text style={styles.title}>Save recipes you want to make</Text>
-            <Text style={styles.subtitle}>
-              From videos, cookbooks, or anywhere.
-            </Text>
-          </View>
-        </View>
+          <ImageBackground
+            key={i}
+            source={bg}
+            style={styles.page}
+            >
+              {/* Overlay to make text pop */}
+              <View style={styles.overlay} />
+            
+            
+              {/* Main content */}
+              <View style={styles.content}>
+                <Text style={styles.appTitle}>cook now</Text>
+                {i === 0 && <Text style={styles.welcome}>Welcome</Text>}
 
-        {/* ------- Page 2 ---------- */}
-        <View style={styles.page}>
-          <View style={styles.branding}>
-            <Text style={styles.appTitle}>cook now</Text>
-          </View>
-
-          <View style={styles.textBlock}>
-            <Text style={styles.title}>Automatically organize ingredients</Text>
-            <Text style={styles.subtitle}>
-              Know what you have and what you’re missing.
-            </Text>
-          </View>
-        </View>
-
-        {/* ------- Page 3 ---------*/}
-        <View style={styles.page}>
-          <View style={styles.branding}>
-            <Text style={styles.appTitle}>cook now</Text>
-          </View>
-
-          <View style={styles.textBlock}>
-            <Text style={styles.title}>Turn inspiration into action</Text>
-            <Text style={styles.subtitle}>
-              Plan meals and generate grocery lists effortlessly.
-            </Text>
-          </View>
-        </View>
+              <View style={styles.textBlock}>
+                {i === 0 && (
+                  <>
+                    <Text style={styles.title}>Save recipes you want to make</Text>
+                    <Text style={styles.subtitle}>From videos, cookbooks, or anywhere.</Text>
+                  </>
+                )}
+                {i === 1 && (
+                  <>
+                    <Text style={styles.title}>Automatically organize ingredients</Text>
+                    <Text style={styles.subtitle}>Know what you have and what you’re missing.</Text>
+                  </>
+                )}
+                {i === 2 && (
+                  <>
+                    <Text style={styles.title}>Turn inspiration into action</Text>
+                    <Text style={styles.subtitle}>Plan meals and generate grocery lists effortlessly.</Text>
+                  </>
+                )}
+              </View>
+            </View>
+          </ImageBackground>
+        ))}
       </ScrollView>
 
       {/* Page indicator UI (dots) */}
       <View style={styles.dots}>
-        {[0, 1, 2].map((i) => (
+        {backgrounds.map((_, i) => (
           <View
             key={i}
             style={[
@@ -114,7 +118,6 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
   },
 
   skip: {
@@ -126,68 +129,81 @@ const styles = StyleSheet.create({
 
   skipText: {
     fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
+    color: Colors.light.text, //uses theme color
   },
 
   page: {
     width,
     paddingHorizontal: 32,
-    justifyContent: 'space-between',
-    // justifyContent: 'center',
-    paddingTop: 120,
-    paddingBottom: 160,
+    justifyContent: 'center'
   },
 
-  branding: {
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+
+  content: {
+    flex: 1, 
+    justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 24,
   },
 
   appTitle: {
     fontSize: 36,
-    fontWeight: '600',
-    // marginBottom: 4,
-    color: '#fff',
+    fontWeight: '700',
+    color: Colors.light.text,
     letterSpacing: 0.5,
+    textAlign: 'center',
+    fontFamily: Fonts.sans,
   },
 
   welcome: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
-    marginBottom: 4,
+    fontSize: 16,
+    color: Colors.light.text,
+    marginBottom: 40,
+    textAlign: 'center',
   },
 
   // wrapper for title + subtitle
   textBlock: {
+    marginTop: 200, // move subtitle closer to Get started button
+    alignItems: 'center',
     gap: 12,
   },
 
   title: {
     fontSize: 26,
     fontWeight: '600',
-    color: '#fff',
+    color: Colors.light.text,
     textAlign: 'center',
+    fontFamily: Fonts.sans,
   },
 
   subtitle: {
     fontSize: 16,
-    color: 'rgba(255,255,255,0.85)',
+    color: Colors.light.text,
     lineHeight: 22,
     textAlign: 'center',
+    fontFamily: Fonts.sans,
   },
 
   dots: {
     position: 'absolute',
-    bottom: 110,
+    bottom: 100,
+    width: '100%',
     flexDirection: 'row',
-    alignSelf: 'center',
+    justifyContent: 'center',
     gap: 8,
   },
 
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#fff',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.light.text,
+    marginHorizontal: 4,
   },
 
   // get started button
@@ -196,14 +212,14 @@ const styles = StyleSheet.create({
     bottom: 40,
     left: 24,
     right: 24,
-    backgroundColor: '#2F5D50',
+    backgroundColor: Colors.light.tint,
     paddingVertical: 16,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
   },
 
   buttonText: {
-    color: '#fff',
+    color: Colors.light.background,
     fontSize: 16,
     fontWeight: '600',
   },
