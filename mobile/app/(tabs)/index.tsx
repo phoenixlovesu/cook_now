@@ -26,7 +26,7 @@ export default function HomeScreen() {
       ) : (
         // renders a scrollable list
         <FlatList
-          data={recipes} // recipe array
+          data={recipes} 
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.recipeItem}>

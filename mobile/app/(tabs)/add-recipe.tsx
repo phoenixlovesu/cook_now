@@ -12,11 +12,10 @@ export default function AddRecipeScreen() {
     const [instructions, setInstructions] = useState('');
     const [link, setLink] = useState(''); 
 
-    // This function will just log data for now; will connect to Home next
     const handleAddRecipe = () => {
         console.log('Recipe:', { name, ingredients, instructions, link });
-        // later - save to local state/ navigate back to home
-        router.push('/(tabs)/index');
+        // navigate back to RecipeDetailScreen
+        router.push('/(tabs)/recipe-detail');
     };
 
   return (
