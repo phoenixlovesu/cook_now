@@ -14,7 +14,8 @@ export default function HomeScreen() {
 
       {recipes.length === 0 ? (
         <View style={styles.empty}> 
-          <Text style={styles.emptyText}>No recipes yet</Text>
+          <Text style={styles.emptyText}>You have no recipes yet</Text>
+          <Text style={styles.emptyHint}>Add a recipe to start cooking and planning meals.</Text>
           <TouchableOpacity
             style={styles.button}
             onPress={() => router.push('/(tabs)/add-recipe')}
@@ -58,6 +59,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     color: Colors.light.text,
+    marginBottom: 20,
+  },
+  emptyHint: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
     marginBottom: 20,
   },
   button: {
