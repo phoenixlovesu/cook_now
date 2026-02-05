@@ -15,7 +15,7 @@ export default function AddRecipeScreen() {
     const handleAddRecipe = () => {
         console.log('Recipe:', { name, ingredients, instructions, link });
         // navigate back to RecipeDetailScreen
-        router.push('/(tabs)/recipe-detail');
+        router.push('/recipe-detail');
     };
 
   return (

@@ -2,11 +2,34 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native
 import { useRouter } from 'expo-router';
 import {Colors, Fonts } from '@/constants/theme';
 
+// Type for a recipe
+type Recipe = {
+  name: string;
+  ingredients: string;
+  instructions: string;
+  link?: string;
+}
+
+// initial mock recipes 
+const initialRecipes: Recipe[] = [
+  {
+    name: 'Spaghetti Carbonara',
+    ingredients: 'Spaghetti, Eggs, Pancetta, Parmesan, Pepper',
+    instructions: 'Cook pasta. Mix eggs and cheese. Fry pancetta. Combine all.',
+    link: 'https://example.com/carbonara',
+  },
+  {
+    name: 'Tomato Basil Soup',
+    ingredients: 'Tomatoes, Basil, Onion, Garlic, Vegetable Stock',
+    instructions: 'Cook all ingredients. Blend until smooth. Serve warm.',
+    link: 'https://example.com/tomato-soup',
+  },
+];
+
 export default function HomeScreen() {
   const router = useRouter();
 
-  // Sample data for recipes (empty at start)
-  const recipes: { name: string }[] = [];
+  const recipes: Recipe[] = initialRecipes;
 
   return (
     <View style={styles.container}>
@@ -18,7 +41,7 @@ export default function HomeScreen() {
           <Text style={styles.emptyHint}>Add a recipe to start cooking and planning meals.</Text>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => router.push('/(tabs)/add-recipe')}
+            onPress={() => router.push('/recipe-detail')}
             >
               <Text style={styles.buttonText}>Add recipe</Text>
           </TouchableOpacity>
@@ -27,11 +50,27 @@ export default function HomeScreen() {
         // renders a scrollable list
         <FlatList
           data={recipes} 
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(_, index) => index.toString()}
           renderItem={({ item }) => (
-            <View style={styles.recipeItem}>
+            <TouchableOpacity 
+              style={styles.recipeCard}
+              onPress={() => 
+                router.push({
+                  pathname: '/recipe-detail',
+                  params: {
+                    name: item.name,
+                    ingredients: item.ingredients,
+                    instructions: item.instructions,
+                    link: item.link,
+                  },
+                })
+              }
+            >
               <Text style={styles.recipeName}>{item.name}</Text>
-            </View>
+              <Text style={styles.recipeSnippet}>
+                {item.ingredients.split(',').slice(0.3).join(',')}
+              </Text>
+            </TouchableOpacity>
           )}
           />
         )}
@@ -42,7 +81,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
+    padding: 24,
     paddingTop: 50,
     backgroundColor: Colors.light.background,
   },
@@ -51,6 +90,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: Fonts.sans,
     marginBottom: 24,
+    color: Colors.light.text
   },
   empty: {
     alignItems: 'center',
@@ -78,12 +118,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-  recipeItem: {
+  recipeCard: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 12,
+    marginBottom: 16,
+    backgroundColor: '#fff',
   },
   recipeName: {
     fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  recipeSnippet: {
+    fontSize: 14,
+    color: '#666'
   },
 });

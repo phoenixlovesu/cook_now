@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
@@ -11,48 +12,52 @@ export default function TabLayout() {
   const colorScheme = useColorScheme() ?? 'light';
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarActiveTintColor: Colors[colorScheme].tint,
-        tabBarInactiveTintColor: Colors[colorScheme].icon,
-      }}>
+
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarButton: HapticTab,
+          tabBarActiveTintColor: Colors[colorScheme].tint,
+          tabBarInactiveTintColor: Colors[colorScheme].icon,
+        }}>
         
-      {/*  Home / Recipe Inbox */}
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
+        {/*  Home / Recipe Inbox */}
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          }}
+        />
 
-      {/*  Add Recipe */}
-      <Tabs.Screen
-        name="add-recipe"
-        options={{
-          title: 'Add Recipe',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus.circle.fill" color={color} />,
-        }}
-      />
+        {/*  Add Recipe */}
+        <Tabs.Screen
+          name="add-recipe"
+          options={{
+            title: 'Add Recipe',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="plus.circle.fill" color={color} />,
+          }}
+        />
 
-      {/* Search */}
-      <Tabs.Screen
-        name="search"
-        options={{
-          title: 'Search',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
-        }}
-      />
-      {/*  Grocery List */}
-      <Tabs.Screen
-        name="grocery-list"
-        options={{
-          title: 'Grocery',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="cart.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+        {/* Search */}
+        <Tabs.Screen
+          name="search"
+          options={{
+            title: 'Search',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
+          }}
+        />
+        {/*  Grocery List */}
+        <Tabs.Screen
+          name="grocery-list"
+          options={{
+            title: 'Grocery',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="cart.fill" color={color} />,
+          }}
+        />
+      </Tabs>
+    </GestureHandlerRootView>
   );
 }
+
