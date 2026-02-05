@@ -7,7 +7,6 @@ export default function RecipeDetailScreen() {
   const router = useRouter();
 
   // Get recipe data passed from Home screen
-  // Example: router.push({ pathname: '/recipe-detail', params: { name, ingredients, instructions, link } })
   const { 
     name = 'Untitled Recipe', 
     ingredients = 'No ingredients provided.', 
