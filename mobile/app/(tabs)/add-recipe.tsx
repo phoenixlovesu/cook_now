@@ -1,7 +1,24 @@
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Colors, Fonts } from '@/constants/theme';
+import { useState } from 'react';
 
 export default function AddRecipeScreen() {
+    const router = useRouter();
+
+    // Local state to track form inputs
+    const [name, setName] = useState('');
+    const [ingredients, setIngredients] = useState('');
+    const [instructions, setInstructions] = useState('');
+    const [link, setLink] = useState(''); 
+
+    // This function will just log data for now; will connect to Home next
+    const handleAddRecipe = () => {
+        console.log('Recipe:', { name, ingredients, instructions, link });
+        // later - save to local state/ navigate back to home
+        router.push('/(tabs)/index');
+    };
+
   return (
     <View style={styles.container}>
       
@@ -14,14 +31,8 @@ export default function AddRecipeScreen() {
         placeholder="e.g. Spaghetti Carbonara"
         placeholderTextColor="#999"
         style={styles.input}
-      />
-
-      {/* Recipe link input (optional) */}
-      <Text style={styles.label}>Recipe Link (optional)</Text>
-      <TextInput
-        placeholder="https://example.com/recipe"
-        placeholderTextColor="#999"
-        style={styles.input}
+        value={name}
+        onChangeText={setName}
       />
 
       {/* Ingredients input */}
@@ -31,6 +42,8 @@ export default function AddRecipeScreen() {
         placeholderTextColor="#999"
         style={[styles.input, styles.multilineInput]}
         multiline
+        value={ingredients}
+        onChangeText={setIngredients}
       />
 
       {/* Instructions input */}
@@ -40,11 +53,23 @@ export default function AddRecipeScreen() {
         placeholderTextColor="#999"
         style={[styles.input, styles.multilineInput]}
         multiline
+        value={instructions}
+        onChangeText={setInstructions}
+      />
+
+       {/* Recipe link input (optional) */}
+      <Text style={styles.label}>Recipe Link (optional)</Text>
+      <TextInput
+        placeholder="https://example.com/recipe"
+        placeholderTextColor="#999"
+        style={styles.input}
+        value={link}
+        onChangeText={setLink}
       />
 
       {/* Save button (no logic yet) */}
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Save Recipe</Text>
+      <TouchableOpacity style={styles.button} onPress={handleAddRecipe}>
+        <Text style={styles.buttonText}>Add Recipe</Text>
       </TouchableOpacity>
     </View>
   );
@@ -76,7 +101,7 @@ const styles = StyleSheet.create({
 
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#ccc',
     borderRadius: 12,
     padding: 12,
     fontSize: 16,
@@ -92,7 +117,7 @@ const styles = StyleSheet.create({
 
   button: {
     backgroundColor: Colors.light.tint,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 12,
