@@ -24,7 +24,7 @@ export default function OnboardingScreen() {
     router.replace('/(tabs)');
   };
 
-  // Placeholder background images
+  // background images
   const backgrounds = [
     require('@/assets/images/onboarding1.jpg'),
     require('@/assets/images/onboarding2.jpg'),
@@ -53,42 +53,39 @@ export default function OnboardingScreen() {
         scrollEventThrottle={16} // onScroll fires every 16 milliseconds
       >
         {backgrounds.map((bg, i) => (
-
           <ImageBackground
             key={i}
             source={bg}
             style={styles.page}
+            resizeMode='cover'
             >
-              {/* Overlay to make text pop */}
-              <View style={styles.overlay} />
-            
-            
-              {/* Main content */}
-              <View style={styles.content}>
+             <View style={styles.content}>
                 <Text style={styles.appTitle}>cook now</Text>
                 {i === 0 && <Text style={styles.welcome}>Welcome</Text>}
 
               <View style={styles.textBlock}>
                 {i === 0 && (
-                  <>
+                  <View>
                     <Text style={styles.title}>Save recipes you want to make</Text>
                     <Text style={styles.subtitle}>From videos, cookbooks, or anywhere.</Text>
-                  </>
+                  </View>
                 )}
+
                 {i === 1 && (
-                  <>
+                  <View>
                     <Text style={styles.title}>Automatically organize ingredients</Text>
                     <Text style={styles.subtitle}>Know what you have and what you’re missing.</Text>
-                  </>
+                  </View>
                 )}
+
                 {i === 2 && (
-                  <>
+                  <View>
                     <Text style={styles.title}>Turn inspiration into action</Text>
                     <Text style={styles.subtitle}>Plan meals and generate grocery lists effortlessly.</Text>
-                  </>
+                  </View>
                 )}
               </View>
-            </View>
+             </View>
           </ImageBackground>
         ))}
       </ScrollView>
@@ -98,10 +95,7 @@ export default function OnboardingScreen() {
         {backgrounds.map((_, i) => (
           <View
             key={i}
-            style={[
-              styles.dot,
-              { opacity: pageIndex === i ? 1 : 0.3 },
-            ]}
+            style={[styles.dot, { opacity: pageIndex === i ? 1 : 0.3 }]}
             />
         ))}
       </View>
@@ -118,6 +112,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFF',
   },
 
   skip: {
@@ -129,18 +124,15 @@ const styles = StyleSheet.create({
 
   skipText: {
     fontSize: 16,
-    color: Colors.light.text, //uses theme color
+    color: '#FFFFFF',
   },
 
   page: {
-    width,
+    width, // full screeen width
+    flex: 1, // take full height
+    height: '100%',
     paddingHorizontal: 32,
     justifyContent: 'center'
-  },
-
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
   },
 
   content: {
@@ -153,15 +145,14 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 36,
     fontWeight: '700',
-    color: Colors.light.text,
+    color: '#FFFFFF',
     letterSpacing: 0.5,
     textAlign: 'center',
-    fontFamily: Fonts.sans,
   },
 
   welcome: {
     fontSize: 16,
-    color: Colors.light.text,
+    color: '#FFFFFF',
     marginBottom: 40,
     textAlign: 'center',
   },
@@ -176,17 +167,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '600',
-    color: Colors.light.text,
+    color: '#FFFFFF',
     textAlign: 'center',
-    fontFamily: Fonts.sans,
   },
 
   subtitle: {
     fontSize: 16,
-    color: Colors.light.text,
+    color: '#FFFFFF',
     lineHeight: 22,
     textAlign: 'center',
-    fontFamily: Fonts.sans,
   },
 
   dots: {
@@ -202,7 +191,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: Colors.light.text,
+    backgroundColor: '#FFFFFF',
     marginHorizontal: 4,
   },
 

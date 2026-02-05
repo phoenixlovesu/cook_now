@@ -10,7 +10,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <text style={styles.title}>Your Recipes</text>
+      <Text style={styles.title}>Your Recipes</Text>
 
       {recipes.length === 0 ? (
         <View style={styles.empty}> 
