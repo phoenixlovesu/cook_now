@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import { Colors, Fonts } from '@/constants/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 /**
  * Fridge screen lets users add ingredients they currently have
@@ -18,7 +19,7 @@ export default function FridgeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Your Fridge</Text>
 
       {/* Input field for fridge ingredients */}
@@ -49,7 +50,7 @@ export default function FridgeScreen() {
         ListEmptyComponent={<Text style={styles.emptyText}>No ingredients yet</Text>}
         contentContainerStyle={{ paddingBottom: 40 }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -59,7 +60,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.light.background,
     paddingHorizontal: 24,
-    paddingTop: 40,
   },
   title: {
     fontSize: 28,

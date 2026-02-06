@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native
 import { useRouter } from 'expo-router';
 import {Colors, Fonts } from '@/constants/theme';
 import { useRecipes } from '@/app/data/recipes-context'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Type for a recipe
 type Recipe = {
@@ -18,7 +19,7 @@ export default function HomeScreen() {
   const { recipes } = useRecipes();
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Your Recipes</Text>
 
       {/* Show empty state if no recipes */}
@@ -66,7 +67,7 @@ export default function HomeScreen() {
           )}
           />
         )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -74,8 +75,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    paddingTop: 50,
+    paddingHorizontal: 24,
     backgroundColor: Colors.light.background,
   },
   title: {

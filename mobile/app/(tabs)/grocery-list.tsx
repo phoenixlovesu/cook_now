@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { Colors, Fonts } from '@/constants/theme';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 /**
  * Grocery List screen- organized by recipe
@@ -19,7 +20,7 @@ export default function GroceryListScreen() {
   ];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Grocery List</Text>
 
       <FlatList
@@ -37,7 +38,7 @@ export default function GroceryListScreen() {
         )}
         contentContainerStyle={{ paddingBottom: 40 }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -47,7 +48,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.light.background,
     paddingHorizontal: 24,
-    paddingTop: 40,
   },
   title: {
     fontSize: 28,

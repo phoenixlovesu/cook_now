@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Colors, Fonts } from '@/constants/theme';
 import { MOCK_RECIPES } from '../data/mock-recipes';
 import { useRecipes } from '@/app/data/recipes-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function SearchScreen() {
   : MOCK_RECIPES; // Show suggestions when no query is typed
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Screen title */}
       <Text style={styles.title}>Search Recipes</Text>
 
@@ -61,7 +62,7 @@ export default function SearchScreen() {
           </TouchableOpacity>
         )}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -72,7 +73,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.light.background, // will support dark mode later
     paddingHorizontal: 24,
-    paddingTop: 40,
   },
   title: {
     fontSize: 28,

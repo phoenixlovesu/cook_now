@@ -13,11 +13,12 @@ import {
 import { useRouter } from 'expo-router';
 import { Colors, Fonts } from '@/constants/theme';
 import { useState, useRef } from 'react';
-import { useRecipes } from '@/app/data/recipes-context'
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRecipes } from '@/app/data/recipes-context';
 
 export default function AddRecipeScreen() {
   const router = useRouter();
-  const { addRecipe } = useRecipes(); // get addRecipe function from context
+  const { addRecipe } = useRecipes(); // Access global recipe state
 
   // Local form state
   const [name, setName] = useState('');
@@ -25,31 +26,34 @@ export default function AddRecipeScreen() {
   const [instructions, setInstructions] = useState('');
   const [link, setLink] = useState('');
 
+  // Ref used to move focus from name → ingredients
   const ingredientsRef = useRef<TextInput>(null);
 
-  // Called when user taps "Add Recipe"
   const handleAddRecipe = () => {
+    // Prevent empty recipes from being saved
     if (!name.trim() || !ingredients.trim() || !instructions.trim()) return;
 
-    addRecipe({ name, ingredients, instructions, link }); // save to context so it shows on Home
+    // Save recipe to global context so it appears on Home
+    addRecipe({ name, ingredients, instructions, link });
 
-    // Resets fields
+    // Reset form fields
     setName('');
     setIngredients('');
     setInstructions('');
     setLink('');
 
-    // navigate to Home
+    // Navigate back to Home screen
     router.push('/');
   };
 
-  // Main screen content extracted so it can be wrapped differently for web and mobile 
+  // Extracted screen content so it can be reused
+  // for both web and mobile wrappers
   const content = (
     <>
       {/* Screen title */}
       <Text style={styles.title}>Add Recipe</Text>
 
-      {/* Recipe name */}
+      {/* Recipe name input */}
       <Text style={styles.label}>Recipe Name</Text>
       <TextInput
         style={styles.input}
@@ -58,10 +62,11 @@ export default function AddRecipeScreen() {
         value={name}
         onChangeText={setName}
         returnKeyType="next"
+        // Move focus to ingredients when user presses "Next"
         onSubmitEditing={() => ingredientsRef.current?.focus()}
       />
 
-      {/* Ingredients */}
+      {/* Ingredients input */}
       <Text style={styles.label}>Ingredients</Text>
       <TextInput
         ref={ingredientsRef}
@@ -73,7 +78,7 @@ export default function AddRecipeScreen() {
         onChangeText={setIngredients}
       />
 
-      {/* Instructions */}
+      {/* Instructions input */}
       <Text style={styles.label}>Instructions</Text>
       <TextInput
         style={[styles.input, styles.multilineInput]}
@@ -84,7 +89,7 @@ export default function AddRecipeScreen() {
         onChangeText={setInstructions}
       />
 
-      {/* Optional link */}
+      {/* Optional recipe link */}
       <Text style={styles.label}>Recipe Link (optional)</Text>
       <TextInput
         style={styles.input}
@@ -101,34 +106,40 @@ export default function AddRecipeScreen() {
     </>
   );
 
-  /* ======= Render ========= */
+  /* ======= Render ======== */
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      {Platform.OS !== 'web' ? (
-        // Mobile: tap outside to dismiss keyboard
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    // Ensures content does not overlap with notch / dynamic island
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.light.background }}>
+      
+      {/* Adjusts layout when keyboard appears */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        {Platform.OS !== 'web' ? (
+          // Mobile - allow tapping outside inputs to dismiss keyboard
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ScrollView
+              contentContainerStyle={styles.container}
+              keyboardShouldPersistTaps="handled"
+            >
+              {content}
+            </ScrollView>
+          </TouchableWithoutFeedback>
+        ) : (
+          // Web - TouchableWithoutFeedback breaks typing so it is skipped here
           <ScrollView
             contentContainerStyle={styles.container}
             keyboardShouldPersistTaps="handled"
           >
             {content}
           </ScrollView>
-        </TouchableWithoutFeedback>
-      ) : (
-        // Web: no TouchableWithoutFeedback (breaks typing)
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-        >
-          {content}
-        </ScrollView>
-      )}
-    </KeyboardAvoidingView>
+        )}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
+
 
 /* ======== Styles ============ */
 const styles = StyleSheet.create({
@@ -136,7 +147,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: Colors.light.background,
     paddingHorizontal: 24,
-    paddingTop: 40,
   },
 
   title: {
