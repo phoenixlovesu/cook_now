@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ScrollView, Linking } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors, Fonts } from '@/constants/theme';
 import { Pressable, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useRecipes } from './data/recipes-context'
 
 export default function RecipeDetailScreen() {
   const router = useRouter();

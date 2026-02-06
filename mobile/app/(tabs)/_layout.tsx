@@ -22,12 +22,21 @@ export default function TabLayout() {
           tabBarInactiveTintColor: Colors[colorScheme].icon,
         }}>
         
-        {/*  Home / Recipe Inbox */}
+        {/*  Home / My Recipes */}
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
+            title: 'My Recipes',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          }}
+        />
+
+        {/* Discover / Search */}
+        <Tabs.Screen
+          name="search"
+          options={{
+            title: 'Discover',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
           }}
         />
 
@@ -40,14 +49,15 @@ export default function TabLayout() {
           }}
         />
 
-        {/* Search */}
+        {/* Fridge */}
         <Tabs.Screen
-          name="search"
+          name="fridge"
           options={{
-            title: 'Search',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="magnifyingglass" color={color} />,
+            title: 'Fridge',
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name="archivebox.fill" color={color} />,
           }}
         />
+
         {/*  Grocery List */}
         <Tabs.Screen
           name="grocery-list"

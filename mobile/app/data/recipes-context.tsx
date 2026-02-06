@@ -15,7 +15,7 @@ type RecipesContextType = {
 const RecipesContext = createContext<RecipesContextType | undefined>(undefined);
 
 export const RecipesProvider = ({ children }: { children: ReactNode }) => {
-  const [recipes, setRecipes] = useState<Recipe[]>([]); // start empty, only user-added recipes
+  const [recipes, setRecipes] = useState<Recipe[]>([]); // start empty, only useradded recipes
 
   const addRecipe = (recipe: Recipe) => {
     setRecipes(prev => [...prev, recipe]);
