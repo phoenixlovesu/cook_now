@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Fonts } from '@/constants/theme';
 import { useRecipes } from '@/app/data/recipes-context';
+import { useRouter } from 'expo-router';
 
 /**
  * GroceryListScreen
@@ -20,16 +21,13 @@ import { useRecipes } from '@/app/data/recipes-context';
  * - "Missing ingredients" highlight for fridge tab integration
  */
 export default function GroceryListScreen() {
+  const router = useRouter();
   const { recipes } = useRecipes(); // Get saved recipes from context
 
-  /**
-   * For now, map recipes to a format suitable for FlatList:
-   * Each recipe has a name and a list of ingredients.
-   * Later, user can filter only "missing ingredients" if integrating fridge tab.
-   */
+   // Map recipes to a grocery list format
   const groceryData = recipes.map((r) => ({
     recipe: r.name,
-    ingredients: r.ingredients.split('\n'), // assuming ingredients are multiline
+    ingredients: r.ingredients.split('\n'), // assuming multiline ingredients
   }));
 
   // State for tracking checked ingredients (inline checklist)
@@ -39,6 +37,21 @@ export default function GroceryListScreen() {
   const toggleItem = (key: string) => {
     setCheckedItems((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  // === Render empty state if no recipes ====
+  if (recipes.length === 0) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={styles.title}>Grocery List</Text>
+        <Text style={styles.emptyText}>Your grocery list is empty!</Text>
+        <Text style={styles.emptyHint}>Add recipes from Home to start building your grocery list.</Text>
+        <Pressable style={styles.addButton} onPress={() => router.push('/add-recipe')}>
+          <Text style={styles.addButtonText}>Add Recipe</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  }
+
 
   return (
     // SafeAreaView ensures content is visible on phones with notches/islands
@@ -85,8 +98,9 @@ export default function GroceryListScreen() {
 /* ======== Styles ============ */
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    backgroundColor: Colors.light.background,
   },
   title: {
     fontSize: 28,
@@ -95,6 +109,29 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     color: Colors.light.text,
     textAlign: 'center',
+  },
+    emptyText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: Colors.light.text,
+    marginBottom: 12,
+  },
+  emptyHint: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+    addButton: {
+    backgroundColor: Colors.light.tint,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+  },
+  addButtonText: {
+    color: Colors.light.background,
+    fontSize: 16,
+    fontWeight: '600',
   },
   recipeCard: {
     padding: 16,
