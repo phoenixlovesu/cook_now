@@ -1,102 +1,141 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors, Fonts } from '@/constants/theme';
-import { useState } from 'react';
-import { ScrollView } from 'react-native-gesture-handler';
+import { useState, useRef } from 'react';
 
 export default function AddRecipeScreen() {
-    const router = useRouter();
+  const router = useRouter();
 
-    // Local state to track form inputs
-    const [name, setName] = useState('');
-    const [ingredients, setIngredients] = useState('');
-    const [instructions, setInstructions] = useState('');
-    const [link, setLink] = useState(''); 
+  /* ======================
+     Local form state
+  ====================== */
+  const [name, setName] = useState('');
+  const [ingredients, setIngredients] = useState('');
+  const [instructions, setInstructions] = useState('');
+  const [link, setLink] = useState('');
 
-    // called when user taps Add Recipe
-    const handleAddRecipe = () => {
-        console.log('Recipe:', { name, ingredients, instructions, link });
+  /* ======================
+     Input refs
+     Used to move focus when pressing "Next"
+  ====================== */
+  const ingredientsRef = useRef<TextInput>(null);
 
-        // TODO: save recipe to local state / backend here 
+  /* ======================
+     Handle save
+     (data persistence comes later)
+  ====================== */
+  const handleAddRecipe = () => {
+    console.log('Recipe:', { name, ingredients, instructions, link });
 
-        // navigate back to RecipeDetailScreen with entered data
-        router.push({
-          pathname: '/recipe-detail',
-          params: { name, ingredients, instructions, link }
-        });
-      };
+    // Navigate to recipe detail screen with entered data
+    router.push({
+      pathname: '/recipe-detail',
+      params: { name, ingredients, instructions, link },
+    });
+  };
 
+  /* Main screen content extracted so it can be wrapped differently for web and mobile */
+  const content = (
+    <>
+      {/* Screen title */}
+      <Text style={styles.title}>Add Recipe</Text>
+
+      {/* Recipe name */}
+      <Text style={styles.label}>Recipe Name</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="e.g. Spaghetti Carbonara"
+        placeholderTextColor="#999"
+        value={name}
+        onChangeText={setName}
+        returnKeyType="next"
+        onSubmitEditing={() => ingredientsRef.current?.focus()}
+      />
+
+      {/* Ingredients */}
+      <Text style={styles.label}>Ingredients</Text>
+      <TextInput
+        ref={ingredientsRef}
+        style={[styles.input, styles.multilineInput]}
+        placeholder="One ingredient per line"
+        placeholderTextColor="#999"
+        multiline
+        value={ingredients}
+        onChangeText={setIngredients}
+      />
+
+      {/* Instructions */}
+      <Text style={styles.label}>Instructions</Text>
+      <TextInput
+        style={[styles.input, styles.multilineInput]}
+        placeholder="Step-by-step instructions"
+        placeholderTextColor="#999"
+        multiline
+        value={instructions}
+        onChangeText={setInstructions}
+      />
+
+      {/* Optional link */}
+      <Text style={styles.label}>Recipe Link (optional)</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="https://example.com/recipe"
+        placeholderTextColor="#999"
+        value={link}
+        onChangeText={setLink}
+      />
+
+      {/* Save button */}
+      <TouchableOpacity style={styles.button} onPress={handleAddRecipe}>
+        <Text style={styles.buttonText}>Add Recipe</Text>
+      </TouchableOpacity>
+    </>
+  );
+
+  /* ======= Render ========= */
   return (
-    // Moves UI up when keyboard is visble
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding': 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {/* Dismiss keyboard when user taps outside inputs */}
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      {Platform.OS !== 'web' ? (
+        // Mobile: tap outside to dismiss keyboard
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={styles.container}
+            keyboardShouldPersistTaps="handled"
+          >
+            {content}
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      ) : (
+        // Web: no TouchableWithoutFeedback (breaks typing)
         <ScrollView
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-        {/* Screen title */}
-        <Text style={styles.title}>Add Recipe</Text>
-
-        {/* Recipe name input */}
-        <Text style={styles.label}>Recipe Name</Text>
-        <TextInput
-          placeholder="e.g. Spaghetti Carbonara"
-          placeholderTextColor="#999"
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-        />
-
-        {/* Ingredients input */}
-        <Text style={styles.label}>Ingredients</Text>
-        <TextInput
-          placeholder="One ingredient per line"
-          placeholderTextColor="#999"
-          style={[styles.input, styles.multilineInput]}
-          multiline
-          value={ingredients}
-          onChangeText={setIngredients}
-        />
-
-        {/* Instructions input */}
-        <Text style={styles.label}>Instructions</Text>
-        <TextInput
-          placeholder="Step-by-step instructions"
-          placeholderTextColor="#999"
-          style={[styles.input, styles.multilineInput]}
-          multiline
-          value={instructions}
-          onChangeText={setInstructions} 
-        />
-
-        {/* Recipe link input (optional) */}
-        <Text style={styles.label}>Recipe Link (optional)</Text>
-        <TextInput
-          placeholder="https://example.com/recipe"
-          placeholderTextColor="#999"
-          style={styles.input}
-          value={link}
-          onChangeText={setLink}
-        />
-
-        {/* Save button (no logic yet) */}
-        <TouchableOpacity style={styles.button} onPress={handleAddRecipe}>
-          <Text style={styles.buttonText}>Add Recipe</Text>
-        </TouchableOpacity>
+          {content}
         </ScrollView>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView> 
+      )}
+    </KeyboardAvoidingView>
   );
 }
 
-/* ============= STYLES ========== */
+/* ======== Styles ============ */
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: Colors.light.background,
     paddingHorizontal: 24,
     paddingTop: 40,
@@ -130,15 +169,15 @@ const styles = StyleSheet.create({
 
   multilineInput: {
     height: 120,
-    textAlignVertical: 'top', // keeps text at top on android
+    textAlignVertical: 'top',
   },
 
   button: {
     backgroundColor: Colors.light.tint,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: 8,
   },
 
   buttonText: {
