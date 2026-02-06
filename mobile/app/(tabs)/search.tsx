@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Colors, Fonts } from '@/constants/theme';
 import { MOCK_RECIPES } from '../data/mock-recipes';
+import { useRecipes } from '@/app/data/recipes-context';
 
 export default function SearchScreen() {
   const router = useRouter();

@@ -13,39 +13,37 @@ import {
 import { useRouter } from 'expo-router';
 import { Colors, Fonts } from '@/constants/theme';
 import { useState, useRef } from 'react';
+import { useRecipes } from '@/app/data/recipes-context'
 
 export default function AddRecipeScreen() {
   const router = useRouter();
+  const { addRecipe } = useRecipes(); // get addRecipe function from context
 
-  /* ======================
-     Local form state
-  ====================== */
+  // Local form state
   const [name, setName] = useState('');
   const [ingredients, setIngredients] = useState('');
   const [instructions, setInstructions] = useState('');
   const [link, setLink] = useState('');
 
-  /* ======================
-     Input refs
-     Used to move focus when pressing "Next"
-  ====================== */
   const ingredientsRef = useRef<TextInput>(null);
 
-  /* ======================
-     Handle save
-     (data persistence comes later)
-  ====================== */
+  // Called when user taps "Add Recipe"
   const handleAddRecipe = () => {
-    console.log('Recipe:', { name, ingredients, instructions, link });
+    if (!name.trim() || !ingredients.trim() || !instructions.trim()) return;
 
-    // Navigate to recipe detail screen with entered data
-    router.push({
-      pathname: '/recipe-detail',
-      params: { name, ingredients, instructions, link },
-    });
+    addRecipe({ name, ingredients, instructions, link }); // save to context so it shows on Home
+
+    // Resets fields
+    setName('');
+    setIngredients('');
+    setInstructions('');
+    setLink('');
+
+    // navigate to Home
+    router.push('/');
   };
 
-  /* Main screen content extracted so it can be wrapped differently for web and mobile */
+  // Main screen content extracted so it can be wrapped differently for web and mobile 
   const content = (
     <>
       {/* Screen title */}

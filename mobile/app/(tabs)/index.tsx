@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import {Colors, Fonts } from '@/constants/theme';
+import { useRecipes } from '@/app/data/recipes-context'
 
 // Type for a recipe
 type Recipe = {
@@ -10,47 +11,34 @@ type Recipe = {
   link?: string;
 }
 
-// initial mock recipes 
-const initialRecipes: Recipe[] = [
-  {
-    name: 'Spaghetti Carbonara',
-    ingredients: 'Spaghetti, Eggs, Pancetta, Parmesan, Pepper',
-    instructions: 'Cook pasta. Mix eggs and cheese. Fry pancetta. Combine all.',
-    link: 'https://example.com/carbonara',
-  },
-  {
-    name: 'Tomato Basil Soup',
-    ingredients: 'Tomatoes, Basil, Onion, Garlic, Vegetable Stock',
-    instructions: 'Cook all ingredients. Blend until smooth. Serve warm.',
-    link: 'https://example.com/tomato-soup',
-  },
-];
-
 export default function HomeScreen() {
   const router = useRouter();
 
-  const recipes: Recipe[] = initialRecipes;
+  // Get recipes from context
+  const { recipes } = useRecipes();
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Your Recipes</Text>
 
+      {/* Show empty state if no recipes */}
       {recipes.length === 0 ? (
         <View style={styles.empty}> 
           <Text style={styles.emptyText}>You have no recipes yet</Text>
           <Text style={styles.emptyHint}>Add a recipe to start cooking and planning meals.</Text>
           <TouchableOpacity
             style={styles.button}
-            onPress={() => router.push('/recipe-detail')}
+            onPress={() => router.push('/add-recipe')} // go to Add Recipe screen
             >
               <Text style={styles.buttonText}>Add recipe</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        // renders a scrollable list
+        // renders a scrollable list of recipe cards
         <FlatList
           data={recipes} 
           keyExtractor={(_, index) => index.toString()}
+          contentContainerStyle={{ paddingBottom: 40 }}
           renderItem={({ item }) => (
             <TouchableOpacity 
               style={styles.recipeCard}
@@ -66,8 +54,12 @@ export default function HomeScreen() {
                 })
               }
             >
+              {/* recipe title */}
               <Text style={styles.recipeName}>{item.name}</Text>
+
+              {/* Ingredients snippet */}
               <Text style={styles.recipeSnippet}>
+                {/* Show first 3 ingredients */}
                 {item.ingredients.split(',').slice(0.3).join(',')}
               </Text>
             </TouchableOpacity>
@@ -78,6 +70,7 @@ export default function HomeScreen() {
   );
 }
 
+/* ====== STYLES ============ */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
