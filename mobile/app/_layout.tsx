@@ -4,8 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { RecipesProvider } from '@/app/data/recipes-context';
-import { GroceryProvider } from '@/app/data/grocery-context';
+import { RecipesProvider } from '@/data/recipes-context';
+
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -16,7 +16,7 @@ export default function RootLayout() {
 
   return (
     <RecipesProvider>
-      <GroceryProvider>
+      
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -24,7 +24,7 @@ export default function RootLayout() {
           </Stack>
           <StatusBar style="auto" />
         </ThemeProvider>
-      </GroceryProvider>
+     
     </RecipesProvider>
   );
 }

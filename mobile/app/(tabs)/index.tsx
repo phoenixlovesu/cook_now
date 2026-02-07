@@ -1,131 +1,111 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
-import {Colors, Fonts } from '@/constants/theme';
-import { useRecipes } from '@/app/data/recipes-context'
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-// Type for a recipe
-type Recipe = {
-  name: string;
-  ingredients: string;
-  instructions: string;
-  link?: string;
-}
+import { useRecipes, Recipe } from '@/data/recipes-context';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
+  const { recipes } = useRecipes();
   const router = useRouter();
 
-  // Get recipes from context
-  const { recipes } = useRecipes();
+  // Handler for Add Recipe button
+  const handleAddRecipe = () => {
+    router.push('/(tabs)/add-recipe');
+  };
+
+  // Render each recipe card
+  const renderRecipe = ({ item }: { item: Recipe }) => (
+    <TouchableOpacity
+      style={styles.recipeCard}
+      onPress={() => router.push({ pathname: '/recipe/[id]', params: { id: item.id } })}
+    >
+      <Text style={styles.recipeName}>{item.name}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Your Recipes</Text>
+      <Text style={styles.title}>My Recipes</Text>
 
-      {/* Show empty state if no recipes */}
       {recipes.length === 0 ? (
-        <View style={styles.empty}> 
-          <Text style={styles.emptyText}>You have no recipes yet</Text>
-          <Text style={styles.emptyHint}>Add a recipe to start cooking and planning meals.</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No recipes yet.</Text>
+
           <TouchableOpacity
-            style={styles.button}
-            onPress={() => router.push('/add-recipe')} // go to Add Recipe screen
-            >
-              <Text style={styles.buttonText}>Add recipe</Text>
+            style={styles.addButton}
+            onPress={handleAddRecipe}
+          >
+            <Text style={styles.addButtonText}>Add Recipe</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        // renders a scrollable list of recipe cards
         <FlatList
-          data={recipes} 
-          keyExtractor={(_, index) => index.toString()}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity 
-              style={styles.recipeCard}
-              onPress={() => 
-                router.push({
-                  pathname: '/recipe-detail',
-                  params: {
-                    name: item.name,
-                    ingredients: item.ingredients,
-                    instructions: item.instructions,
-                    link: item.link,
-                  },
-                })
-              }
-            >
-              {/* recipe title */}
-              <Text style={styles.recipeName}>{item.name}</Text>
-
-              {/* Ingredients snippet */}
-              <Text style={styles.recipeSnippet}>
-                {/* Show first 3 ingredients */}
-                {item.ingredients.split(',').slice(0.3).join(',')}
-              </Text>
-            </TouchableOpacity>
-          )}
-          />
-        )}
+          data={recipes}
+          keyExtractor={item => item.id}
+          renderItem={renderRecipe}
+          contentContainerStyle={styles.list}
+        />
+      )}
     </SafeAreaView>
   );
 }
 
-/* ====== STYLES ============ */
+/* ===== Styles ===== */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     paddingHorizontal: 24,
-    backgroundColor: Colors.light.background,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    fontFamily: Fonts.sans,
-    marginBottom: 24,
-    color: Colors.light.text
+    marginTop: 24,
+    marginBottom: 16,
   },
-  empty: {
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 100,
+    marginTop: 48,
   },
   emptyText: {
     fontSize: 18,
-    color: Colors.light.text,
+    color: '#999',
     marginBottom: 20,
-  },
-  emptyHint: {
-    fontSize: 14,
-    color: '#666',
     textAlign: 'center',
-    marginBottom: 20,
   },
-  button: {
-    backgroundColor: Colors.light.tint,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
+  addButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
     borderRadius: 12,
   },
-  buttonText: {
-    color: Colors.light.background,
+  addButtonText: {
+    color: '#fff',
     fontWeight: '600',
     fontSize: 16,
   },
+  list: {
+    paddingBottom: 24,
+  },
   recipeCard: {
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    marginBottom: 12,
     borderRadius: 12,
-    marginBottom: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   recipeName: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 6,
-  },
-  recipeSnippet: {
-    fontSize: 14,
-    color: '#666'
   },
 });
+
+
+

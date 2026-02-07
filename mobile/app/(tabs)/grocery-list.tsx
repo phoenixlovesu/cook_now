@@ -1,170 +1,96 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
+  ScrollView,
   StyleSheet,
-  FlatList,
-  Pressable,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Fonts } from '@/constants/theme';
-import { useRecipes } from '@/app/data/recipes-context';
-import { useRouter } from 'expo-router';
+import { useRecipes } from '@/data/recipes-context';
 
-/**
- * GroceryListScreen
- * Displays all ingredients from recipes the user has saved or added
- * Ingredients are grouped per recipe for better organization
- * Future features:
- * - Checklist toggle per ingredient
- * - Date picker for planned cooking
- * - "Missing ingredients" highlight for fridge tab integration
- */
 export default function GroceryListScreen() {
-  const router = useRouter();
-  const { recipes } = useRecipes(); // Get saved recipes from context
-
-   // Map recipes to a grocery list format
-  const groceryData = recipes.map((r) => ({
-    recipe: r.name,
-    ingredients: r.ingredients.split('\n'), // assuming multiline ingredients
-  }));
-
-  // State for tracking checked ingredients (inline checklist)
-  const [checkedItems, setCheckedItems] = useState<{ [key: string]: boolean }>({});
-
-  // Toggle checklist item
-  const toggleItem = (key: string) => {
-    setCheckedItems((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  // === Render empty state if no recipes ====
-  if (recipes.length === 0) {
-    return (
-      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={styles.title}>Grocery List</Text>
-        <Text style={styles.emptyText}>Your grocery list is empty!</Text>
-        <Text style={styles.emptyHint}>Add recipes from Home to start building your grocery list.</Text>
-        <Pressable style={styles.addButton} onPress={() => router.push('/add-recipe')}>
-          <Text style={styles.addButtonText}>Add Recipe</Text>
-        </Pressable>
-      </SafeAreaView>
-    );
-  }
-
+  const { recipes, toggleIngredient } = useRecipes();
 
   return (
-    // SafeAreaView ensures content is visible on phones with notches/islands
-    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.light.background }}>
-      {/* FlatList handles scrolling of all recipes */}
-      <FlatList
-        data={groceryData}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={styles.container}
-        ListHeaderComponent={
-          <Text style={styles.title}>Grocery List</Text>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.recipeCard}>
-            {/* Recipe name */}
-            <Text style={styles.recipeName}>{item.recipe}</Text>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Grocery List</Text>
 
-            {/* Ingredients for this recipe */}
-            {item.ingredients.map((ingredient, idx) => {
-              const key = `${item.recipe}-${idx}`; // unique key for checklist
-              const checked = !!checkedItems[key];
+      {recipes.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No saved recipes yet.</Text>
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={styles.list}>
+          {recipes.map(recipe => (
+            <View key={recipe.id} style={styles.recipeCard}>
+              <Text style={styles.recipeName}>{recipe.name}</Text>
 
-              return (
-                <Pressable
-                  key={key}
-                  onPress={() => toggleItem(key)}
-                  style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}
+              {recipe.ingredients.map(ing => (
+                <TouchableOpacity
+                  key={ing.name}
+                  style={styles.ingredientRow}
+                  onPress={() => toggleIngredient(recipe.id, ing.name)}
                 >
-                  {/* Simple checkbox indicator */}
-                  <View style={[styles.checkbox, checked && styles.checkboxChecked]} />
-                  <Text style={[styles.ingredientText, checked && styles.ingredientChecked]}>
-                    {ingredient}
+                  <Text style={styles.checkbox}>
+                    {ing.hasIt ? '✅' : '⬜'}
                   </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        )}
-      />
+                  <Text style={styles.ingredientName}>{ing.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
 
-/* ======== Styles ============ */
+/* ===== Styles ===== */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     paddingHorizontal: 24,
-    backgroundColor: Colors.light.background,
+    paddingTop: 16,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    fontFamily: Fonts.sans,
-    marginBottom: 24,
-    color: Colors.light.text,
-    textAlign: 'center',
+    marginBottom: 16,
   },
-    emptyText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.light.text,
-    marginBottom: 12,
-  },
-  emptyHint: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-    addButton: {
-    backgroundColor: Colors.light.tint,
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-  },
-  addButtonText: {
-    color: Colors.light.background,
-    fontSize: 16,
-    fontWeight: '600',
+  list: {
+    paddingBottom: 24,
   },
   recipeCard: {
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    marginBottom: 12,
     borderRadius: 12,
-    marginBottom: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   recipeName: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
-    color: Colors.light.text,
+    marginBottom: 8,
   },
-  ingredientText: {
-    fontSize: 16,
-    color: Colors.light.text,
-    marginLeft: 8,
-  },
-  ingredientChecked: {
-    textDecorationLine: 'line-through',
-    color: '#999',
+  ingredientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
+    fontSize: 18,
+    marginRight: 8,
   },
-  checkboxChecked: {
-    backgroundColor: Colors.light.tint,
-    borderColor: Colors.light.tint,
+  ingredientName: {
+    fontSize: 16,
+  },
+  emptyContainer: {
+    marginTop: 48,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
   },
 });

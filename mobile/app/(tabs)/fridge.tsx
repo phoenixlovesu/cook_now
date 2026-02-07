@@ -1,107 +1,85 @@
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
-import { Colors, Fonts } from '@/constants/theme';
+import React from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+} from 'react-native';
+import { useRecipes } from '@/data/recipes-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 
-/**
- * Fridge screen lets users add ingredients they currently have
- * Will connect this to recipe recommendations and missing ingredients later
- */
 export default function FridgeScreen() {
-  const [ingredient, setIngredient] = useState('');
-  const [fridgeItems, setFridgeItems] = useState<string[]>([]);
+  const router = useRouter();
+  const { suggestRecipes } = useRecipes();
+  const fridgeItems = ['tomatoes', 'chicken', 'bread']; // Example fridge items
 
-  // Adds ingredient to fridge list
-  const handleAddIngredient = () => {
-    if (!ingredient.trim()) return;
-    setFridgeItems(prev => [...prev, ingredient.trim()]);
-    setIngredient('');
-  };
+  const suggestedRecipes = suggestRecipes(fridgeItems);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Your Fridge</Text>
-
-      {/* Input field for fridge ingredients */}
-      <TextInput
-        style={styles.input}
-        placeholder="Add ingredient you have"
-        placeholderTextColor="#999"
-        value={ingredient}
-        onChangeText={setIngredient}
-        onSubmitEditing={handleAddIngredient} // press Enter to add
-        returnKeyType="done"
-      />
-
-      {/* Add button */}
-      <TouchableOpacity style={styles.button} onPress={handleAddIngredient}>
-        <Text style={styles.buttonText}>Add Ingredient</Text>
-      </TouchableOpacity>
-
-      {/* List of ingredients in fridge */}
-      <FlatList
-        data={fridgeItems}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.itemCard}>
-            <Text style={styles.itemText}>{item}</Text>
-          </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {suggestedRecipes.length === 0 ? (
+          <Text style={styles.emptyText}>No matching recipes in your fridge.</Text>
+        ) : (
+          <FlatList
+            data={suggestedRecipes}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.card}
+                onPress={() =>
+                  // Go to detail page before saving
+                  router.push({
+                    pathname: '/recipe/[id]',
+                    params: { id: item.id },
+                  })
+                }
+              >
+                {item.image && (
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.cardImage}
+                  />
+                )}
+                <Text style={styles.cardTitle}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+          />
         )}
-        ListEmptyComponent={<Text style={styles.emptyText}>No ingredients yet</Text>}
-        contentContainerStyle={{ paddingBottom: 40 }}
-      />
+      </View>
     </SafeAreaView>
   );
 }
 
-/* ====== Styles ======== */
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    fontFamily: Fonts.sans,
-    marginBottom: 16,
-    color: Colors.light.text,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 12,
-    backgroundColor: '#fff',
-  },
-  button: {
-    backgroundColor: Colors.light.tint,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  buttonText: {
-    color: Colors.light.background,
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  itemCard: {
-    padding: 12,
+  safeArea: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, padding: 16 },
+  card: {
+    flexDirection: 'column',
     backgroundColor: '#f5f5f5',
     borderRadius: 12,
+    padding: 12,
     marginBottom: 12,
   },
-  itemText: {
+  cardImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  cardTitle: {
     fontSize: 16,
+    fontWeight: '600',
   },
   emptyText: {
-    color: '#666',
-    fontStyle: 'italic',
+    fontSize: 16,
+    color: '#999',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 32,
+    fontStyle: 'italic',
   },
 });
+

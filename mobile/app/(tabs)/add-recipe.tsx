@@ -1,3 +1,4 @@
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,50 +11,65 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Colors, Fonts } from '@/constants/theme';
-import { useState, useRef } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRecipes } from '@/app/data/recipes-context';
+import { useRecipes } from '@/data/recipes-context';
+import { Ingredient } from '@/data/mock-recipes';
 
 export default function AddRecipeScreen() {
   const router = useRouter();
-  const { addRecipe } = useRecipes(); // Access global recipe state
+  const { addRecipe } = useRecipes();
 
-  // Local form state
+  // Local state for form fields
   const [name, setName] = useState('');
   const [ingredients, setIngredients] = useState('');
   const [instructions, setInstructions] = useState('');
   const [link, setLink] = useState('');
 
-  // Ref used to move focus from name → ingredients
+  // Ref to move focus from name -> ingredients
   const ingredientsRef = useRef<TextInput>(null);
 
+  /* ===== Handler to save recipe ===== */
   const handleAddRecipe = () => {
-    // Prevent empty recipes from being saved
+    // Prevent saving if required fields are empty
     if (!name.trim() || !ingredients.trim() || !instructions.trim()) return;
 
-    // Save recipe to global context so it appears on Home
-    addRecipe({ name, ingredients, instructions, link });
+    // Convert ingredients string into array of Ingredient objects
+    const ingredientList: Ingredient[] = ingredients
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(item => ({
+        name: item,
+        hasIt: false,
+      }));
 
-    // Reset form fields
+    // Save recipe to context
+    addRecipe({
+      name,
+      ingredients: ingredientList,
+      instructions,
+      link,
+    });
+
+    // Reset form fields after saving
     setName('');
     setIngredients('');
     setInstructions('');
     setLink('');
 
-    // Navigate back to Home screen
+    // Navigate back to home screen
     router.push('/');
   };
 
-  // Extracted screen content so it can be reused
-  // for both web and mobile wrappers
+  /* ===== Content JSX ===== */
   const content = (
     <>
       {/* Screen title */}
       <Text style={styles.title}>Add Recipe</Text>
 
-      {/* Recipe name input */}
+      {/* Recipe Name */}
       <Text style={styles.label}>Recipe Name</Text>
       <TextInput
         style={styles.input}
@@ -62,11 +78,10 @@ export default function AddRecipeScreen() {
         value={name}
         onChangeText={setName}
         returnKeyType="next"
-        // Move focus to ingredients when user presses "Next"
         onSubmitEditing={() => ingredientsRef.current?.focus()}
       />
 
-      {/* Ingredients input */}
+      {/* Ingredients */}
       <Text style={styles.label}>Ingredients</Text>
       <TextInput
         ref={ingredientsRef}
@@ -78,7 +93,7 @@ export default function AddRecipeScreen() {
         onChangeText={setIngredients}
       />
 
-      {/* Instructions input */}
+      {/* Instructions */}
       <Text style={styles.label}>Instructions</Text>
       <TextInput
         style={[styles.input, styles.multilineInput]}
@@ -89,7 +104,7 @@ export default function AddRecipeScreen() {
         onChangeText={setInstructions}
       />
 
-      {/* Optional recipe link */}
+      {/* Optional link */}
       <Text style={styles.label}>Recipe Link (optional)</Text>
       <TextInput
         style={styles.input}
@@ -106,18 +121,14 @@ export default function AddRecipeScreen() {
     </>
   );
 
-  /* ======= Render ======== */
+  /* ===== Render ===== */
   return (
-    // Ensures content does not overlap with notch / dynamic island
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.light.background }}>
-      
-      {/* Adjusts layout when keyboard appears */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {Platform.OS !== 'web' ? (
-          // Mobile - allow tapping outside inputs to dismiss keyboard
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <ScrollView
               contentContainerStyle={styles.container}
@@ -127,7 +138,6 @@ export default function AddRecipeScreen() {
             </ScrollView>
           </TouchableWithoutFeedback>
         ) : (
-          // Web - TouchableWithoutFeedback breaks typing so it is skipped here
           <ScrollView
             contentContainerStyle={styles.container}
             keyboardShouldPersistTaps="handled"
@@ -140,8 +150,7 @@ export default function AddRecipeScreen() {
   );
 }
 
-
-/* ======== Styles ============ */
+/* ===== Styles ===== */
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,

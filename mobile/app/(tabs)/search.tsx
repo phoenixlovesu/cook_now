@@ -1,110 +1,110 @@
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { Colors, Fonts } from '@/constants/theme';
-import { MOCK_RECIPES } from '../data/mock-recipes';
-import { useRecipes } from '@/app/data/recipes-context';
+import { MOCK_RECIPES, Recipe } from '@/data/mock-recipes';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SearchScreen() {
   const router = useRouter();
   const [query, setQuery] = useState('');
 
-  // Type for a recipe
-  type Recipe = {
-    id: string;
-    name: string;
-    ingredients: string;
-    instructions: string;
-    link?: string;
-  };
-
-  // Filter recipes by name, ingredients text, or instructions text
-  const filteredRecipes = query 
-    ? MOCK_RECIPES.filter((recipe: Recipe) =>
-      recipe.name.toLowerCase().includes(query.toLowerCase()) ||
-      recipe.ingredients.toLowerCase().includes(query.toLowerCase()) || 
-      recipe.instructions.toLowerCase().includes(query.toLowerCase())
-    )
-  : MOCK_RECIPES; // Show suggestions when no query is typed
+  // Filter mock recipes based on search query (name or ingredient)
+  const filteredRecipes = MOCK_RECIPES.filter(recipe => {
+    const q = query.toLowerCase();
+    return (
+      recipe.name.toLowerCase().includes(q) ||
+      recipe.ingredients.some(i => i.name.toLowerCase().includes(q))
+    );
+  });
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Screen title */}
-      <Text style={styles.title}>Search Recipes</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Search input */}
+        <TextInput
+          style={styles.input}
+          placeholder="Search recipes or ingredients"
+          placeholderTextColor="#999"
+          value={query}
+          onChangeText={setQuery}
+        />
 
-      {/* Search input */}
-      <TextInput
-        placeholder="Search by name, ingredient, or instructions"
-        placeholderTextColor="#999"
-        style={styles.input}
-        value={query}
-        onChangeText={setQuery}
-      />
-
-      {/* List of filtered recipes*/}
-      <FlatList
-        data={filteredRecipes}
-        keyExtractor={item => item.id}
-        contentContainerStyle={{ paddingBottom: 40 }}
-        renderItem={({ item }: { item: Recipe }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() =>
-              router.push({
-                pathname: '/recipe-detail',
-                params: item, // pass recipe data to detail screen
-              })
-            }
-          >
-            <Text style={styles.recipeName}>{item.name}</Text>
-            <Text style={styles.recipeHint}>Tap to view recipe</Text> 
-          </TouchableOpacity>
+        {/* Show filtered results or empty state */}
+        {filteredRecipes.length === 0 ? (
+          <Text style={styles.emptyText}>No recipes found.</Text>
+        ) : (
+          <FlatList
+            data={filteredRecipes}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.card}
+                onPress={() =>
+                  router.push({
+                    pathname: '/recipe/[id]',
+                    params: { id: item.id },
+                  })
+                }
+              >
+                {/* Optional image */}
+                {item.image && (
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.cardImage}
+                  />
+                )}
+                <Text style={styles.cardTitle}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+          />
         )}
-      />
+      </View>
     </SafeAreaView>
   );
 }
 
-/* ======= STYLES ========= */
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background, // will support dark mode later
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    fontFamily: Fonts.sans,
-    marginBottom: 16,
-    color: Colors.light.text,
-  },
+  safeArea: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, padding: 16 },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 12,
     padding: 12,
     fontSize: 16,
-    marginBottom: 20,
+    marginBottom: 16,
     backgroundColor: '#fff',
   },
   card: {
-    padding: 16,
-    borderRadius: 14,
-    backgroundColor: '#f5f5f5',
+    flexDirection: 'column',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 12,
   },
-  recipeName: {
-    fontSize: 18,
-    fontWeight: '600',
-    fontFamily: Fonts.sans,
-    color: Colors.light.text,
+  cardImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 12,
+    marginBottom: 8,
   },
-  recipeHint: {
-    marginTop: 4,
-    fontSize: 14,
-    color: '#666',
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 32,
+    fontSize: 16,
+    color: '#999',
+    fontStyle: 'italic',
   },
 });
