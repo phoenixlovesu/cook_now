@@ -11,6 +11,7 @@ type RecipesContextType = {
 
 const RecipesContext = createContext<RecipesContextType | undefined>(undefined);
 
+
 export const RecipesProvider = ({ children }: { children: ReactNode }) => {
   // Start empty to show empty state on home
   const [recipes, setRecipes] = useState<Recipe[]>([]);

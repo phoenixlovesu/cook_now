@@ -17,7 +17,7 @@ export default function SearchScreen() {
   const [query, setQuery] = useState('');
 
   // Filter mock recipes based on search query (name or ingredient)
-  const filteredRecipes = MOCK_RECIPES.filter(recipe => {
+  const filteredRecipes: Recipe[] = MOCK_RECIPES.filter(recipe => {
     const q = query.toLowerCase();
     return (
       recipe.name.toLowerCase().includes(q) ||
@@ -44,6 +44,8 @@ export default function SearchScreen() {
           <FlatList
             data={filteredRecipes}
             keyExtractor={item => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.card}
@@ -54,13 +56,19 @@ export default function SearchScreen() {
                   })
                 }
               >
-                {/* Optional image */}
-                {item.image && (
-                  <Image
-                    source={{ uri: item.image }}
-                    style={styles.cardImage}
-                  />
-                )}
+                {/* Image container (always reserve space) */}
+                <View style={styles.cardImageContainer}>
+                  {item.image ? (
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.cardImage}
+                    />
+                  ) : (
+                    <View style={styles.cardImagePlaceholder} />
+                  )}
+                </View>
+
+                {/* Title at bottom */}
                 <Text style={styles.cardTitle}>{item.name}</Text>
               </TouchableOpacity>
             )}
@@ -72,39 +80,72 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#fff' },
-  container: { flex: 1, padding: 16 },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 12,
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     fontSize: 16,
     marginBottom: 16,
-    backgroundColor: '#fff',
   },
+
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 24,
+    fontSize: 16,
+    color: '#999',
+  },
+
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+
   card: {
-    flexDirection: 'column',
-    backgroundColor: '#f9f9f9',
+    flex: 1,
+    backgroundColor: '#f8f8f8',
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    padding: 8,
+    marginHorizontal: 4,
+    marginBottom: 8,
+    alignItems: 'center',
   },
-  cardImage: {
+
+  cardImageContainer: {
     width: '100%',
     height: 120,
-    borderRadius: 12,
-    marginBottom: 8,
+    backgroundColor: '#eee', // placeholder background
   },
+
+  cardImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+
+  cardImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#ddd',
+  },
+
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  emptyText: {
+    padding: 8,
     textAlign: 'center',
-    marginTop: 32,
-    fontSize: 16,
-    color: '#999',
-    fontStyle: 'italic',
   },
 });
+

@@ -2,110 +2,166 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  FlatList,
   TouchableOpacity,
+  FlatList,
+  Image,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRecipes, Recipe } from '@/data/recipes-context';
 import { useRouter } from 'expo-router';
+import { useRecipes } from '@/data/recipes-context';
 
 export default function HomeScreen() {
-  const { recipes } = useRecipes();
   const router = useRouter();
-
-  // Handler for Add Recipe button
-  const handleAddRecipe = () => {
-    router.push('/(tabs)/add-recipe');
-  };
-
-  // Render each recipe card
-  const renderRecipe = ({ item }: { item: Recipe }) => (
-    <TouchableOpacity
-      style={styles.recipeCard}
-      onPress={() => router.push({ pathname: '/recipe/[id]', params: { id: item.id } })}
-    >
-      <Text style={styles.recipeName}>{item.name}</Text>
-    </TouchableOpacity>
-  );
+  const { recipes: savedRecipes } = useRecipes(); // only saved recipes
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>My Recipes</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Text style={styles.title}>My Recipes</Text>
 
-      {recipes.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No recipes yet.</Text>
+        {savedRecipes.length === 0 ? (
+          <View style={styles.center}>
+            <Text style={styles.emptyText}>No recipes saved yet.</Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => router.push('/add-recipe')}
+            >
+              <Text style={styles.buttonText}>Add Recipe</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={savedRecipes}
+            keyExtractor={item => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.card}
+                onPress={() =>
+                  router.push({
+                    pathname: '/recipe/[id]',
+                    params: { id: item.id },
+                  })
+                }
+              >
+                {/* Image container (always reserve space) */}
+                <View style={styles.cardImageContainer}>
+                  {item.image ? (
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.cardImage}
+                    />
+                  ) : (
+                    <View style={styles.cardImagePlaceholder} />
+                  )}
+                </View>
 
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={handleAddRecipe}
-          >
-            <Text style={styles.addButtonText}>Add Recipe</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <FlatList
-          data={recipes}
-          keyExtractor={item => item.id}
-          renderItem={renderRecipe}
-          contentContainerStyle={styles.list}
-        />
-      )}
+                {/* Title at bottom */}
+                <Text style={styles.cardTitle}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        )}
+      </View>
     </SafeAreaView>
   );
 }
 
 /* ===== Styles ===== */
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 24,
   },
+
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+
   title: {
     fontSize: 28,
     fontWeight: '700',
-    marginTop: 24,
     marginBottom: 16,
   },
-  emptyContainer: {
+
+  center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 48,
   },
+
   emptyText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#999',
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+
+  button: {
+    backgroundColor: '#3498db',
+    paddingVertical: 14,
+    borderRadius: 12,
+    paddingHorizontal: 24,
+  },
+
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+
+/*  card: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    marginHorizontal: 4,
+    marginBottom: 16,
+    overflow: 'hidden',
+    alignItems: 'center',
+  },
+  */
+   card: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    padding: 8,
+    marginHorizontal: 4,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+
+  cardImageContainer: {
+    width: '100%',
+    height: 120,
+    backgroundColor: '#eee', // placeholder background
+  },
+
+  cardImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+
+  cardImagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#ddd',
+  },
+
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    padding: 8,
     textAlign: 'center',
   },
-  addButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  list: {
-    paddingBottom: 24,
-  },
-  recipeCard: {
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    backgroundColor: '#f5f5f5',
-  },
-  recipeName: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
 });
-
 
 
