@@ -1,3 +1,21 @@
+/* 
+============================================
+RevenueCat Monetization Plan
+============================================
+
+TODO: Integrate RevenueCat SDK for iOS and Android
+- Manage subscriptions / in-app purchases
+- Premium features could include:
+• Access to API recipes
+• Exclusive recipe sets
+• Ingredient meal planning suggestions
+- Implementation plan:
+1. Install RevenueCat SDK (react-native-purchases)
+2. Wrap app in PurchasesProvider / configure API key
+3. Track subscription status in RecipesContext
+4. Conditionally unlock premium features based on subscription
+*/
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { MOCK_RECIPES, Recipe, Ingredient, NewRecipe } from './mock-recipes';
 
