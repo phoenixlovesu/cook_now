@@ -5,6 +5,10 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { RecipesProvider } from '@/data/recipes-context';
+import Purchases, { LOG_LEVEL } from "react-native-purchases";// import Purchases
+import { useEffect } from 'react';
+import { Platform } from "react-native";
+
 
 
 export const unstable_settings = {
@@ -14,17 +18,34 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
+  // Initialize RevenueCat when app loads
+  useEffect(() => {
+    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+
+  const apiKey =
+    Platform.OS === "ios"
+      ? "test_NUIkCnONywjjXanDiPzGTLizYnJ"
+      : "test_NUIkCnONywjjXanDiPzGTLizYnJ";
+
+  Purchases.configure({
+    apiKey,
+  });
+}, []);
+
+
   return (
     <RecipesProvider>
-      
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-          </Stack>
-          <StatusBar style="auto" />
-        </ThemeProvider>
-     
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="modal"
+            options={{ presentation: 'modal', title: 'Modal' }}
+          />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
     </RecipesProvider>
   );
 }
+
