@@ -47,7 +47,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Fry until crispy and golden.
 3. Top with fresh salad and drizzle with tahini.`,
     link: 'https://www.eitanbernath.com/2024/06/06/sesame-schnitzel-topped-with-loaded-salad/',
-    image: 'https://unsplash.com/photos/a-plate-of-food-and-a-cup-of-tea-x8P-CPnEbfk',
+    image: 'https://images.unsplash.com/photo-1680098021575-dec82f3128d5?q=80&w=875&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     source: 'mock',
   },
   {
@@ -64,7 +64,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Top with mozzarella and tomatoes.
 3. Finish with basil and olive oil.`,
     link: 'https://www.eitanbernath.com/2024/01/31/caprese-pizza/',
-    image: 'https://unsplash.com/photos/a-pizza-sitting-on-top-of-a-table-next-to-a-spatula-YUae3JfvGi8',
+    image: 'https://images.unsplash.com/photo-1707551624156-bb6369857026?q=80&w=1019&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     source: 'mock',
   },
   {
@@ -81,7 +81,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Slowly stir stock into rice.
 3. Finish with thyme and parmesan.`,
     link: 'https://www.eitanbernath.com/2023/07/25/wild-mushroom-thyme-risotto/',
-    image: 'https://unsplash.com/photos/brown-wooden-bowl-with-food-z32XV0TGSzc',
+    image: 'https://images.unsplash.com/photo-1581184953963-d15972933db1?q=80&w=965&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     source: 'mock',
   },
   {
@@ -98,7 +98,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Cook vegetables in butter.
 3. Toss together and bake until crisp.`,
     link: 'https://www.eitanbernath.com/2023/11/20/better-than-stove-top-stuffing/',
-    image: 'https://unsplash.com/photos/mixed-vegetable-in-tray-1rq-jAmPlz4',
+    image: 'https://images.unsplash.com/photo-1511996946289-f0c071823341?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     source: 'mock',
   },
   {
@@ -115,7 +115,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Bake until golden.
 3. Finish with flaky salt.`,
     link: 'https://www.eitanbernath.com/2023/06/20/salted-caramel-stuffed-chocolate-chip-cookies/',
-    image: 'https://unsplash.com/photos/a-stack-of-cookies-sitting-on-top-of-a-piece-of-wax-paper-eUtuXrT9ZLw',
+    image: 'https://images.unsplash.com/photo-1731415106227-0eaa41ffde0f?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     source: 'mock',
   },
   {
@@ -131,7 +131,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Pan-fry until crisp.
 3. Top with yogurt and chutney.`,
     link: 'https://www.eitanbernath.com/2023/04/04/aloo-tikki-chaat/',
-    image: 'https://www.pexels.com/photo/rustic-baked-potatoes-with-fresh-herbs-30120983/',
+    image: 'https://images.pexels.com/photos/30120983/pexels-photo-30120983.jpeg',
     source: 'mock',
   },
   {
@@ -147,7 +147,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Fry until crunchy.
 3. Serve with homemade pickles.`,
     link: 'https://www.eitanbernath.com/2022/12/09/popcorn-chicken-two-ways-with-homemade-pickles/',
-    image: 'https://www.pexels.com/photo/close-up-of-chicken-wings-in-a-bowl-5923475/',
+    image: 'https://www.pexels.com/phhttps://images.pexels.com/photos/5923475/pexels-photo-5923475.jpeg/',
     source: 'mock',
   },
   {
@@ -163,7 +163,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Toss with greens.
 3. Finish with vinaigrette.`,
     link: 'https://www.eitanbernath.com/2022/11/18/warm-winter-salad-with-sun-dried-tomato-vinaigrette/',
-    image: 'https://unsplash.com/photos/plate-of-food-surrounded-by-uncut-vegetables-C77jmp3Hg1M', 
+    image: 'https://images.unsplash.com/photo-1568661290695-1e23938cf5be?q=80&w=1095&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', 
     source: 'mock',
   },
   {
@@ -179,7 +179,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Cook spiced lamb.
 3. Spoon lamb over hummus.`,
     link: 'https://www.eitanbernath.com/2022/12/02/hummus-with-spiced-lamb-and-herby-tahini/',
-    image: 'https://www.pexels.com/photo/herb-and-meat-on-hummus-19328883/',
+    image: 'https://images.pexels.com/photos/19328883/pexels-photo-19328883.jpeg',
     source: 'mock',
   },
   {
@@ -195,7 +195,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Shake with tequila and lime.
 3. Serve over ice.`,
     link: 'https://www.eitanbernath.com/2023/05/25/blackberry-thyme-margarita/',
-    image: 'https://unsplash.com/photos/a-drink-with-a-slice-of-watermelon-on-the-side-fKWsh6X9QZs',
+    image: 'https://images.unsplash.com/photo-1680364390313-9d69759de5c1?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     source: 'mock',
   },
 ];

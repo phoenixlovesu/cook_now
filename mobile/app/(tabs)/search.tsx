@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { MOCK_RECIPES, Recipe } from '@/data/mock-recipes';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import RecipeImage from '@/components/ui/recipe-image';
 
 export default function SearchScreen() {
   const router = useRouter();
@@ -56,17 +57,10 @@ export default function SearchScreen() {
                   })
                 }
               >
-                {/* Image container (always reserve space) */}
-                <View style={styles.cardImageContainer}>
-                  {item.image ? (
-                    <Image
-                      source={{ uri: item.image }}
-                      style={styles.cardImage}
-                    />
-                  ) : (
-                    <View style={styles.cardImagePlaceholder} />
-                  )}
-                </View>
+              {/* Image container (always reserve space) */}
+              <View style={styles.cardImageContainer}>
+                <RecipeImage uri={item.image} style={styles.cardImage} />
+              </View>
 
                 {/* Title at bottom */}
                 <Text style={styles.cardTitle}>{item.name}</Text>

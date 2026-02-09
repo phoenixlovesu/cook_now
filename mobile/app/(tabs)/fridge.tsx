@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { MOCK_RECIPES } from '@/data/mock-recipes';
 import type { Recipe } from '@/data/recipes-context';
+import RecipeImage from '@/components/ui/recipe-image';
 
 export default function FridgeScreen() {
   const [fridgeItems, setFridgeItems] = useState<string[]>([]);
@@ -96,14 +97,13 @@ export default function FridgeScreen() {
                 })
               }
             >
+              {/* Image container (always reserve space) */}
               <View style={styles.cardImageContainer}>
-                {item.image ? (
-                  <Image source={{ uri: item.image }} style={styles.cardImage} />
-                ) : (
-                  <View style={styles.cardImagePlaceholder} />
-                )}
+                <RecipeImage uri={item.image} style={styles.cardImage} />
               </View>
-              <Text style={styles.cardTitle}>{item.name}</Text>
+
+                {/* Title at bottom */}
+                <Text style={styles.cardTitle}>{item.name}</Text>
             </TouchableOpacity>
           )}
         />

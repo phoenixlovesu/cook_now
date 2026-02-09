@@ -1,23 +1,25 @@
 {
   "expo": {
-    "name": "CookNow",
+    "name": "Cook Now",
     "slug": "cook-now",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "mobile",
-    "platforms": ["ios", "android", "web"],
+    "scheme": "cooknow",
     "newArchEnabled": true,
-
+    
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.phoenix.cooknow",
-      "buildNumber": "1"
+      "bundleIdentifier": "com.aminahkargbo.cooknow",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to you camera to scan ingredients.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to you photos to upload recipe images."
+      }
     },
-    
     "android": {
-      "package": "com.phoenix.cooknow",
+      "package": "com.aminahkargbo.cooknow",
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -50,6 +52,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "18638afe-aa14-4380-bdfd-8ca183163266"
+      }
     }
   }
 }
