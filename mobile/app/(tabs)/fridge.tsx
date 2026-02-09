@@ -13,129 +13,123 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRecipes, Recipe } from '@/data/recipes-context';
 import { router } from 'expo-router';
 import { MOCK_RECIPES } from '@/data/mock-recipes';
+import type { Recipe } from '@/data/recipes-context';
 
 export default function FridgeScreen() {
-  // {const { suggestRecipes } = useRecipes();} - maybe use this later to accept both fridge items & recipe source (mock + API)
-
   const [fridgeItems, setFridgeItems] = useState<string[]>([]);
   const [input, setInput] = useState('');
 
-  // Add ingredient to fridge list
   const handleAddIngredient = () => {
     const ingredient = input.trim().toLowerCase();
     if (ingredient && !fridgeItems.includes(ingredient)) {
       setFridgeItems(prev => [...prev, ingredient]);
     }
     setInput('');
-    //Keyboard.dismiss();
   };
 
-  // Get suggested recipes based on fridge items
-  // recipes with more matching ingredients float to the top
   const recipesToShow: Recipe[] = fridgeItems.length
-   ? MOCK_RECIPES
-      .map(recipe => {
-        const matchCount = recipe.ingredients.filter(ingredient =>
-          fridgeItems.some(item =>
-            ingredient.name.toLowerCase().includes(item.toLowerCase())
-          )
-        ).length;
+    ? MOCK_RECIPES
+        .map(recipe => {
+          const matchCount = recipe.ingredients.filter(ingredient =>
+            fridgeItems.some(item =>
+              ingredient.name.toLowerCase().includes(item)
+            )
+          ).length;
 
-        return { recipe, matchCount };
-      })
-      .filter(r => r.matchCount > 0)
-      .sort((a, b) => b.matchCount - a.matchCount)
-      .map(r => r.recipe)
-  : [];
+          return { recipe, matchCount };
+        })
+        .filter(r => r.matchCount > 0)
+        .sort((a, b) => b.matchCount - a.matchCount)
+        .map(r => r.recipe)
+    : [];
+
+  const content = (
+    <View style={styles.container}>
+      <Text style={styles.title}>What's in My Fridge</Text>
+
+      <View style={styles.inputRow}>
+        <TextInput
+          style={styles.input}
+          placeholder="Add ingredient..."
+          placeholderTextColor="#999"
+          value={input}
+          onChangeText={setInput}
+          onSubmitEditing={handleAddIngredient}
+          returnKeyType="done"
+        />
+        <TouchableOpacity style={styles.addButton} onPress={handleAddIngredient}>
+          <Text style={styles.addButtonText}>Add</Text>
+        </TouchableOpacity>
+      </View>
+
+      {fridgeItems.length > 0 && (
+        <View style={styles.chipsContainer}>
+          {fridgeItems.map(item => (
+            <View key={item} style={styles.chip}>
+              <Text style={styles.chipText}>{item}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {recipesToShow.length === 0 ? (
+        <Text style={styles.emptyText}>
+          {fridgeItems.length === 0
+            ? 'Add ingredients to see recipes you can make.'
+            : 'No recipes match these ingredients.'}
+        </Text>
+      ) : (
+        <FlatList
+          data={recipesToShow}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() =>
+                router.push({
+                  pathname: '/recipe/[id]',
+                  params: { id: item.id },
+                })
+              }
+            >
+              <View style={styles.cardImageContainer}>
+                {item.image ? (
+                  <Image source={{ uri: item.image }} style={styles.cardImage} />
+                ) : (
+                  <View style={styles.cardImagePlaceholder} />
+                )}
+              </View>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.container}>
-            {/* Screen title */}
-            <Text style={styles.title}>What's in My Fridge</Text>
-
-            {/* Input + add button */}
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.input}
-                placeholder="Add ingredient..."
-                placeholderTextColor="#999"
-                value={input}
-                onChangeText={setInput}
-                onSubmitEditing={handleAddIngredient}
-                returnKeyType="done"
-              />
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={handleAddIngredient}
-              >
-                <Text style={styles.addButtonText}>Add</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Show fridge items as chips */}
-            {fridgeItems.length > 0 && (
-              <View style={styles.chipsContainer}>
-                {fridgeItems.map(item => (
-                  <View key={item} style={styles.chip}>
-                    <Text style={styles.chipText}>{item}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* Recipes grid or empty state */}
-            {recipesToShow.length === 0 ? (
-              <Text style={styles.emptyText}>
-                {fridgeItems.length === 0
-                  ? 'Add ingredients to see recipes you can make.'
-                  : 'No recipes match these ingredients.'}
-              </Text>
-            ) : (
-              <FlatList
-                data={recipesToShow}
-                keyExtractor={item => item.id}
-                numColumns={2}
-                columnWrapperStyle={styles.row}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.card}
-                    onPress={() => {
-                      router.push({ pathname: '/recipe/[id]', params: { id: item.id } })
-                    }}
-                  >
-                {/* Image container (always reserve space) */}
-                <View style={styles.cardImageContainer}>
-                  {item.image ? (
-                    <Image
-                      source={{ uri: item.image }}
-                      style={styles.cardImage}
-                    />
-                  ) : (
-                    <View style={styles.cardImagePlaceholder} />
-                  )}
-                </View>
-
-                {/* Title at bottom */}
-                <Text style={styles.cardTitle}>{item.name}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-            )}
-          </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+      {Platform.OS === 'web' ? (
+        content
+      ) : (
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            {content}
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      )}
     </SafeAreaView>
   );
 }
+
+
 
 /* ======== Styles ============ */
 const styles = StyleSheet.create({
