@@ -10,9 +10,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { useRecipes, Recipe } from '@/data/recipes-context';
-import Purchases from 'react-native-purchases';
+import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
+import { Platform } from 'react-native';
 
 export default function GroceryListScreen() {
   const { recipes, toggleIngredient } = useRecipes();
@@ -21,8 +22,18 @@ export default function GroceryListScreen() {
 
   const [isPro, setIsPro] = useState(false);
 
-  // Check RevenueCat entitlement on mount
+  // Initialize RevenueCat and check entitlements
   useEffect(() => {
+    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+
+    // Choose test keys for dev/TestFlight
+    const apiKey =
+      Platform.OS === "ios"
+        ? process.env.REVENUECAT_IOS_TEST_KEY || "test_NUIkCnONywjjXanDiPzGTLizYnJ"
+        : process.env.REVENUECAT_ANDROID_TEST_KEY || "test_NUIkCnONywjjXanDiPzGTLizYnJ";
+
+    Purchases.configure({ apiKey });
+
     const updateProStatus = async () => {
       try {
         const info = await Purchases.getCustomerInfo();
@@ -35,13 +46,35 @@ export default function GroceryListScreen() {
 
     updateProStatus();
 
-    Purchases.addCustomerInfoUpdateListener(info => {
+    // Listen for changes (purchase/restore)
+    const listener = Purchases.addCustomerInfoUpdateListener(info => {
       setIsPro(!!info.entitlements.active['Cook Now Pro']);
     });
 
   }, []);
 
+  // Handle upgrade purchase
+  const handleUpgrade = async () => {
+    try {
+      // Example: purchase monthly product
+      await Purchases.purchaseProduct("monthly");
+    } catch (e: any) {
+      if (!e.userCancelled) {
+        Alert.alert("Purchase failed", e.message);
+      }
+    }
+  };
 
+  // Handle restore purchases
+  const handleRestore = async () => {
+    try {
+      const info = await Purchases.restorePurchases();
+      setIsPro(!!info.entitlements.active['Cook Now Pro']);
+      Alert.alert("Restored", "Your purchases have been restored.");
+    } catch (e: any) {
+      Alert.alert("Restore failed", e.message);
+    }
+  };
 
   const countMissingIngredients = (recipe: Recipe) => {
     return recipe.ingredients.filter(ing => !ing.hasIt).length;
@@ -135,11 +168,18 @@ export default function GroceryListScreen() {
 
                 <TouchableOpacity
                   style={[styles.upgradeButton, { backgroundColor: theme.tint }]}
-                  onPress={generateShoppingList}
+                  onPress={handleUpgrade} // updated
                 >
                   <Text style={[styles.upgradeButtonText, { color: '#fff' }]}>
                     Upgrade Now
                   </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={{ marginTop: 12 }}
+                  onPress={handleRestore}
+                >
+                  <Text style={{ color: theme.tint }}>Restore Purchases</Text>
                 </TouchableOpacity>
               </View>
             </BlurView>
@@ -162,6 +202,7 @@ export default function GroceryListScreen() {
   );
 }
 
+/* ------ STYLES -----------*/
 const styles = StyleSheet.create({
   container: {
     flex: 1,
