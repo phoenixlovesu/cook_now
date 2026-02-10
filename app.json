@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "bb30b4f6-3b6b-44a2-a10e-fb97f3fbf66b"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.aminahkargbo.cooknow",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}
