@@ -23,17 +23,25 @@ export default function GroceryListScreen() {
 
   // Check RevenueCat entitlement on mount
   useEffect(() => {
-    const checkProStatus = async () => {
+    const updateProStatus = async () => {
       try {
-        const purchaserInfo = await Purchases.getCustomerInfo();
-        setIsPro(Boolean(purchaserInfo.entitlements.active['Cook Now Pro']));
-      } catch (error) {
-        console.log('RevenueCat error:', error);
+        const info = await Purchases.getCustomerInfo();
+        setIsPro(!!info.entitlements.active['Cook Now Pro']);
+      } catch (e) {
+        console.log('RevenueCat error:', e);
         setIsPro(false);
       }
     };
-    checkProStatus();
+
+    updateProStatus();
+
+    Purchases.addCustomerInfoUpdateListener(info => {
+      setIsPro(!!info.entitlements.active['Cook Now Pro']);
+    });
+
   }, []);
+
+
 
   const countMissingIngredients = (recipe: Recipe) => {
     return recipe.ingredients.filter(ing => !ing.hasIt).length;
