@@ -57,7 +57,12 @@
       "router": {},
       "eas": {
         "projectId": "18638afe-aa14-4380-bdfd-8ca183163266"
+      },
+      "revenuecat": {
+        "iosTest": "test_NUIkCnONywjjXanDiPzGTLizYnJ",
+        "iosProd": "appl_SsxSIhYSpyEUGNEGttXwmBqxLPc"
       }
     }
   }
 }
+

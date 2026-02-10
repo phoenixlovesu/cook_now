@@ -8,6 +8,7 @@ import { RecipesProvider } from '@/data/recipes-context';
 import Purchases, { LOG_LEVEL } from "react-native-purchases";// import Purchases
 import { useEffect } from 'react';
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 
 
 
@@ -22,14 +23,15 @@ export default function RootLayout() {
   useEffect(() => {
     Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
 
-  const apiKey =
-    Platform.OS === "ios"
-      ? "test_NUIkCnONywjjXanDiPzGTLizYnJ"
-      : "test_NUIkCnONywjjXanDiPzGTLizYnJ";
+    if (Platform.OS === "ios") {
+      const isProd = !__DEV__;
 
-  Purchases.configure({
-    apiKey,
-  });
+      const apiKey = isProd
+        ? Constants.expoConfig?.extra?.revenuecat?.iosProd
+        : Constants.expoConfig?.extra?.revenuecat?.iosTest;
+
+      Purchases.configure({ apiKey });
+    }
 }, []);
 
 
