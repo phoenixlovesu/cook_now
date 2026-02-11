@@ -6,23 +6,22 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { useRecipes, Recipe } from '@/data/recipes-context';
 import Purchases from 'react-native-purchases';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/theme';
+import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
 
 export default function GroceryListScreen() {
   const { recipes, toggleIngredient } = useRecipes();
+
   const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
 
   const [isPro, setIsPro] = useState(false);
 
-  // Update pro status and listen for RevenueCat changes
   useEffect(() => {
     const updateProStatus = async () => {
       try {
@@ -42,17 +41,18 @@ export default function GroceryListScreen() {
 
   }, []);
 
-
-  // Upgrade purchase
   const handleUpgrade = async () => {
     try {
       const offerings = await Purchases.getOfferings();
       const proPackage = offerings.current?.availablePackages[0];
+
       if (!proPackage) {
         Alert.alert('Purchase failed', 'No products available for purchase.');
         return;
       }
+
       await Purchases.purchasePackage(proPackage);
+
     } catch (e: any) {
       if (!e.userCancelled) {
         Alert.alert('Purchase failed', e.message);
@@ -60,7 +60,6 @@ export default function GroceryListScreen() {
     }
   };
 
-  // Restore purchases
   const handleRestore = async () => {
     try {
       const info = await Purchases.restorePurchases();
@@ -84,6 +83,7 @@ export default function GroceryListScreen() {
     }
 
     const missingItems: string[] = [];
+
     recipes.forEach(recipe =>
       recipe.ingredients.forEach(ing => {
         if (!ing.hasIt) missingItems.push(ing.name);
@@ -101,12 +101,29 @@ export default function GroceryListScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.title, { color: theme.text }]}>Grocery List</Text>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: theme.background }
+      ]}
+    >
+      <Text
+        style={[
+          styles.title,
+          { color: theme.textPrimary }
+        ]}
+      >
+        Grocery List
+      </Text>
 
       {recipes.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, { color: theme.icon }]}>
+          <Text
+            style={[
+              styles.emptyText,
+              { color: theme.textSecondary }
+            ]}
+          >
             No saved recipes yet.
           </Text>
         </View>
@@ -121,29 +138,55 @@ export default function GroceryListScreen() {
                   key={recipe.id}
                   style={[
                     styles.recipeCard,
-                    { backgroundColor: isPro ? '#f5f5f5' : theme.background },
+                    {
+                      backgroundColor: theme.card,
+                      borderColor: theme.divider
+                    }
                   ]}
                 >
-                  <Text style={[styles.recipeName, { color: theme.text }]}>
+                  <Text
+                    style={[
+                      styles.recipeName,
+                      { color: theme.textPrimary }
+                    ]}
+                  >
                     {recipe.name}
                   </Text>
+
                   {recipe.ingredients.map(ing => (
                     <TouchableOpacity
                       key={ing.name}
                       style={styles.ingredientRow}
-                      onPress={() => toggleIngredient(recipe.id, ing.name)}
+                      onPress={() =>
+                        toggleIngredient(recipe.id, ing.name)
+                      }
                     >
-                      <Text style={styles.checkbox}>{ing.hasIt ? '✅' : '⬜'}</Text>
-                      <Text style={[styles.ingredientName, { color: theme.text }]}>
+                      <Text style={styles.checkbox}>
+                        {ing.hasIt ? '✅' : '⬜'}
+                      </Text>
+
+                      <Text
+                        style={[
+                          styles.ingredientName,
+                          { color: theme.textPrimary }
+                        ]}
+                      >
                         {ing.name}
                       </Text>
                     </TouchableOpacity>
                   ))}
-                  {isPro && countMissingIngredients(recipe) > 0 && (
-                    <Text style={styles.missingCount}>
-                      Missing: {countMissingIngredients(recipe)}
-                    </Text>
-                  )}
+
+                  {isPro &&
+                    countMissingIngredients(recipe) > 0 && (
+                      <Text
+                        style={[
+                          styles.missingCount,
+                          { color: theme.textSecondary }
+                        ]}
+                      >
+                        Missing: {countMissingIngredients(recipe)}
+                      </Text>
+                    )}
                 </View>
               );
             })}
@@ -155,8 +198,18 @@ export default function GroceryListScreen() {
               tint={colorScheme === 'dark' ? 'dark' : 'light'}
               style={styles.blurOverlay}
             >
-              <View style={styles.overlayContent}>
-                <Text style={[styles.overlayText, { color: theme.text }]}>
+              <View
+                style={[
+                  styles.overlayContent,
+                  { backgroundColor: theme.card }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.overlayText,
+                    { color: theme.textPrimary }
+                  ]}
+                >
                   Upgrade to Cook Now Pro to unlock:
                   {'\n'}• Generate full shopping lists
                   {'\n'}• Count missing ingredients
@@ -164,10 +217,18 @@ export default function GroceryListScreen() {
                 </Text>
 
                 <TouchableOpacity
-                  style={[styles.upgradeButton, { backgroundColor: theme.tint }]}
+                  style={[
+                    styles.upgradeButton,
+                    { backgroundColor: theme.accent }
+                  ]}
                   onPress={handleUpgrade}
                 >
-                  <Text style={[styles.upgradeButtonText, { color: '#fff' }]}>
+                  <Text
+                    style={[
+                      styles.upgradeButtonText,
+                      { color: theme.buttonText }
+                    ]}
+                  >
                     Upgrade Now
                   </Text>
                 </TouchableOpacity>
@@ -176,7 +237,11 @@ export default function GroceryListScreen() {
                   style={{ marginTop: 12 }}
                   onPress={handleRestore}
                 >
-                  <Text style={{ color: theme.tint }}>Restore Purchases</Text>
+                  <Text
+                    style={{ color: theme.accent }}
+                  >
+                    Restore Purchases
+                  </Text>
                 </TouchableOpacity>
               </View>
             </BlurView>
@@ -184,10 +249,18 @@ export default function GroceryListScreen() {
 
           {isPro && (
             <TouchableOpacity
-              style={[styles.generateButton, { backgroundColor: colorScheme === 'dark' ? '#FFA500' : '#6200EE' }]}
+              style={[
+                styles.generateButton,
+                { backgroundColor: theme.accent }
+              ]}
               onPress={generateShoppingList}
             >
-              <Text style={[styles.generateButtonText, { color: '#fff' }]}>
+              <Text
+                style={[
+                  styles.generateButtonText,
+                  { color: theme.buttonText }
+                ]}
+              >
                 Generate Shopping List
               </Text>
             </TouchableOpacity>
@@ -198,7 +271,6 @@ export default function GroceryListScreen() {
   );
 }
 
-/* ------ STYLES -----------*/
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -217,6 +289,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
+    borderWidth: 1,
   },
   recipeName: {
     fontSize: 18,
@@ -239,7 +312,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 14,
     fontStyle: 'italic',
-    color: '#d9534f',
   },
   generateButton: {
     paddingVertical: 14,
@@ -251,17 +323,14 @@ const styles = StyleSheet.create({
   generateButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: 'rgba(0,0,0,0.25)',
   },
   blurOverlay: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 12,
   },
   overlayContent: {
     padding: 20,
-    backgroundColor: 'rgba(0,0,0,0.25)',
     borderRadius: 12,
     alignItems: 'center',
   },
@@ -287,6 +356,5 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#999',
   },
 });

@@ -1,53 +1,67 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * theme.ts
+ *
+ * Centralized theme definitions for Cook Now.
+ * Includes light and dark mode colors, fonts, and component-specific colors.
+ *
+ * To use:
+ *   import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
+ *   const theme = useColorScheme() === 'dark' ? darkTheme : lightTheme;
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
+export const lightTheme = {
+  background: "#F5FAF9",           
+  card: "#FFFFFF",                  
+  textPrimary: "#2E2E2E",          
+  textSecondary: "#4E908A",         
+  accent: "#3B9A9A",                // Buttons, highlights, active icons
+  buttonText: "#FFFFFF",            
+  divider: "#DCE8E7",               // Borders, separators
+  navbar: "#FFFFFF",                 // NavBar / TabBar background
+  toggleTrack: "#DCE8E7",           // Track for switches/toggles
+  toggleThumb: "#3B9A9A",           // Thumb for switches/toggles
 };
+
+export const darkTheme = {
+  background: "#121A19",            
+  card: "#1E2B2A",                  
+  textPrimary: "#F5F5F5",           
+  textSecondary: "#64B5B5",         
+  accent: "#3B9A9A",                
+  buttonText: "#FFFFFF",            
+  divider: "#263636",              
+  navbar: "#1E2B2A",                 
+  toggleTrack: "#263636",     
+  toggleThumb: "#3B9A9A",           
+};
+
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+    sans: 'Poppins', 
+    serif: 'Georgia',
+    rounded: 'Poppins', 
+    mono: 'Courier New',
   },
-  default: {
-    sans: 'normal',
+  android: {
+    sans: 'Poppins',
     serif: 'serif',
-    rounded: 'normal',
+    rounded: 'Poppins',
     mono: 'monospace',
   },
   web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    sans: "Poppins, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
     serif: "Georgia, 'Times New Roman', serif",
     rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
+  default: {
+    sans: 'Poppins',
+    serif: 'serif',
+    rounded: 'Poppins',
+    mono: 'monospace',
+  },
 });
+
