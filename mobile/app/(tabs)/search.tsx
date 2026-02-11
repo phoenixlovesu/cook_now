@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MOCK_RECIPES, Recipe } from '@/data/mock-recipes';
+import { Colors, Fonts } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RecipeImage from '@/components/ui/recipe-image';
 
@@ -29,6 +30,7 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
+        <Text style={styles.title}>Discover Recipes</Text>
         {/* Search input */}
         <TextInput
           style={styles.input}
@@ -84,6 +86,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
   },
+    title: {
+      fontSize: 28,
+      fontWeight: '700',
+      fontFamily: Fonts.sans,
+      marginBottom: 24,
+      color: Colors.light.text,
+    },
+  
 
   input: {
     borderWidth: 1,
