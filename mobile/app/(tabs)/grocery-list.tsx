@@ -22,48 +22,50 @@ export default function GroceryListScreen() {
 
   const [isPro, setIsPro] = useState(false);
 
-  // Initialize RevenueCat and check entitlements
   useEffect(() => {
-    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
-
-    // Choose test keys for dev/TestFlight
-    const apiKey =
-      Platform.OS === "ios"
-        ? process.env.REVENUECAT_IOS_TEST_KEY || "test_NUIkCnONywjjXanDiPzGTLizYnJ"
-        : process.env.REVENUECAT_ANDROID_TEST_KEY || "test_NUIkCnONywjjXanDiPzGTLizYnJ";
-
-    Purchases.configure({ apiKey });
-
     const updateProStatus = async () => {
       try {
         const info = await Purchases.getCustomerInfo();
-        setIsPro(!!info.entitlements.active['Cook Now Pro']);
+        setIsPro(!!info.entitlements.active["Cook Now Pro"]);
       } catch (e) {
-        console.log('RevenueCat error:', e);
+        console.log("RevenueCat error:", e);
         setIsPro(false);
       }
     };
 
     updateProStatus();
 
-    // Listen for changes (purchase/restore)
-    const listener = Purchases.addCustomerInfoUpdateListener(info => {
-      setIsPro(!!info.entitlements.active['Cook Now Pro']);
+    Purchases.addCustomerInfoUpdateListener(info => {
+      setIsPro(!!info.entitlements.active["Cook Now Pro"]);
     });
-
   }, []);
+
+
 
   // Handle upgrade purchase
   const handleUpgrade = async () => {
     try {
-      // Example: purchase monthly product
-      await Purchases.purchaseProduct("monthly");
+      const offerings = await Purchases.getOfferings();
+
+      const current = offerings.current;
+      if (!current) {
+        Alert.alert("Unavailable", "No offerings available right now.");
+        return;
+      }
+
+      // Use monthly pkg
+      const pkg = current.availablePackages.find(
+        p => p.identifier === "monthly"
+      ) || current.availablePackages[0];
+
+      await Purchases.purchasePackage(pkg);
     } catch (e: any) {
       if (!e.userCancelled) {
         Alert.alert("Purchase failed", e.message);
       }
     }
   };
+
 
   // Handle restore purchases
   const handleRestore = async () => {

@@ -27,8 +27,6 @@ export default function RootLayout() {
       const apiKey = Constants.expoConfig?.extra?.revenuecat?.iosProd;
       Purchases.configure({ apiKey });
 
-
-      Purchases.configure({ apiKey });
     }
 }, []);
 
