@@ -184,7 +184,7 @@ export default function GroceryListScreen() {
 
           {isPro && (
             <TouchableOpacity
-              style={[styles.generateButton, { backgroundColor: theme.tint }]}
+              style={[styles.generateButton, { backgroundColor: colorScheme === 'dark' ? '#FFA500' : '#6200EE' }]}
               onPress={generateShoppingList}
             >
               <Text style={[styles.generateButtonText, { color: '#fff' }]}>
