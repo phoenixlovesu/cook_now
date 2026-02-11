@@ -2,12 +2,21 @@
 
 # dependencies
 node_modules/
+package-lock.json
 
 # Expo
 .expo/
 dist/
 web-build/
 expo-env.d.ts
+expo-shared/
+*.log
+
+# Xcode / iOS
+ios/Pods/
+ios/build/
+ios/DerivedData/
+*.xcworkspace
 
 # Native
 .kotlin/

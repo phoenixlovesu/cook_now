@@ -8,14 +8,18 @@
     "userInterfaceStyle": "automatic",
     "scheme": "cooknow",
     "newArchEnabled": true,
-    
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.aminahkargbo.cooknow",
       "buildNumber": "1",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to you camera to scan ingredients.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to you photos to upload recipe images."
+        "NSPhotoLibraryUsageDescription": "This app needs access to you photos to upload recipe images.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -65,4 +69,3 @@
     }
   }
 }
-

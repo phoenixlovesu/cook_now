@@ -25,7 +25,6 @@ export default function RootLayout() {
 
     if (Platform.OS === "ios") {
       const isProd = !__DEV__;
-
       const apiKey = isProd
         ? Constants.expoConfig?.extra?.revenuecat?.iosProd
         : Constants.expoConfig?.extra?.revenuecat?.iosTest;
