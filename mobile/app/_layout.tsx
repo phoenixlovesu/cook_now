@@ -24,11 +24,17 @@ export default function RootLayout() {
     Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
 
     if (Platform.OS === "ios") {
-      const apiKey = Constants.expoConfig?.extra?.revenuecat?.iosProd;
-      Purchases.configure({ apiKey });
+      // Determine if this is a production build
+      const isProd = !__DEV__; // __DEV__ is true for local/dev/TestFlight, false for App Store release
 
+      const apiKey = isProd
+        ? Constants.expoConfig?.extra?.revenuecat?.iosProd // Production key for App Store release
+        : Constants.expoConfig?.extra?.revenuecat?.iosTest; // Test key for dev/TestFlight
+
+      Purchases.configure({ apiKey });
     }
-}, []);
+  }, []);
+
 
 
   return (
