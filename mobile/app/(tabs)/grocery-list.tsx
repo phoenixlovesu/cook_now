@@ -6,14 +6,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { useRecipes, Recipe } from '@/data/recipes-context';
-import Purchases, { LOG_LEVEL } from 'react-native-purchases';
+import Purchases from 'react-native-purchases';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
-import { Platform } from 'react-native';
 
 export default function GroceryListScreen() {
   const { recipes, toggleIngredient } = useRecipes();
@@ -22,13 +22,14 @@ export default function GroceryListScreen() {
 
   const [isPro, setIsPro] = useState(false);
 
+  // Update pro status and listen for RevenueCat changes
   useEffect(() => {
     const updateProStatus = async () => {
       try {
         const info = await Purchases.getCustomerInfo();
-        setIsPro(!!info.entitlements.active["Cook Now Pro"]);
+        setIsPro(!!info.entitlements.active['Cook Now Pro']);
       } catch (e) {
-        console.log("RevenueCat error:", e);
+        console.log('RevenueCat error:', e);
         setIsPro(false);
       }
     };
@@ -36,51 +37,42 @@ export default function GroceryListScreen() {
     updateProStatus();
 
     Purchases.addCustomerInfoUpdateListener(info => {
-      setIsPro(!!info.entitlements.active["Cook Now Pro"]);
+      setIsPro(!!info.entitlements.active['Cook Now Pro']);
     });
+
   }, []);
 
 
-
-  // Handle upgrade purchase
+  // Upgrade purchase
   const handleUpgrade = async () => {
     try {
       const offerings = await Purchases.getOfferings();
-
-      const current = offerings.current;
-      if (!current) {
-        Alert.alert("Unavailable", "No offerings available right now.");
+      const proPackage = offerings.current?.availablePackages[0];
+      if (!proPackage) {
+        Alert.alert('Purchase failed', 'No products available for purchase.');
         return;
       }
-
-      // Use monthly pkg
-      const pkg = current.availablePackages.find(
-        p => p.identifier === "monthly"
-      ) || current.availablePackages[0];
-
-      await Purchases.purchasePackage(pkg);
+      await Purchases.purchasePackage(proPackage);
     } catch (e: any) {
       if (!e.userCancelled) {
-        Alert.alert("Purchase failed", e.message);
+        Alert.alert('Purchase failed', e.message);
       }
     }
   };
 
-
-  // Handle restore purchases
+  // Restore purchases
   const handleRestore = async () => {
     try {
       const info = await Purchases.restorePurchases();
       setIsPro(!!info.entitlements.active['Cook Now Pro']);
-      Alert.alert("Restored", "Your purchases have been restored.");
+      Alert.alert('Restored', 'Your purchases have been restored.');
     } catch (e: any) {
-      Alert.alert("Restore failed", e.message);
+      Alert.alert('Restore failed', e.message);
     }
   };
 
-  const countMissingIngredients = (recipe: Recipe) => {
-    return recipe.ingredients.filter(ing => !ing.hasIt).length;
-  };
+  const countMissingIngredients = (recipe: Recipe) =>
+    recipe.ingredients.filter(ing => !ing.hasIt).length;
 
   const generateShoppingList = () => {
     if (!isPro) {
@@ -122,7 +114,7 @@ export default function GroceryListScreen() {
         <>
           <ScrollView contentContainerStyle={styles.list}>
             {recipes.map((recipe, index) => {
-              if (!isPro && index > 0) return null; // preview only one recipe
+              if (!isPro && index > 0) return null;
 
               return (
                 <View
@@ -132,7 +124,9 @@ export default function GroceryListScreen() {
                     { backgroundColor: isPro ? '#f5f5f5' : theme.background },
                   ]}
                 >
-                  <Text style={[styles.recipeName, { color: theme.text }]}>{recipe.name}</Text>
+                  <Text style={[styles.recipeName, { color: theme.text }]}>
+                    {recipe.name}
+                  </Text>
                   {recipe.ingredients.map(ing => (
                     <TouchableOpacity
                       key={ing.name}
@@ -140,7 +134,9 @@ export default function GroceryListScreen() {
                       onPress={() => toggleIngredient(recipe.id, ing.name)}
                     >
                       <Text style={styles.checkbox}>{ing.hasIt ? '✅' : '⬜'}</Text>
-                      <Text style={[styles.ingredientName, { color: theme.text }]}>{ing.name}</Text>
+                      <Text style={[styles.ingredientName, { color: theme.text }]}>
+                        {ing.name}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                   {isPro && countMissingIngredients(recipe) > 0 && (
@@ -153,7 +149,6 @@ export default function GroceryListScreen() {
             })}
           </ScrollView>
 
-          {/* Overlay for free users */}
           {!isPro && recipes.length > 0 && (
             <BlurView
               intensity={50}
@@ -170,7 +165,7 @@ export default function GroceryListScreen() {
 
                 <TouchableOpacity
                   style={[styles.upgradeButton, { backgroundColor: theme.tint }]}
-                  onPress={handleUpgrade} // updated
+                  onPress={handleUpgrade}
                 >
                   <Text style={[styles.upgradeButtonText, { color: '#fff' }]}>
                     Upgrade Now
@@ -187,7 +182,6 @@ export default function GroceryListScreen() {
             </BlurView>
           )}
 
-          {/* Generate button for Pro users */}
           {isPro && (
             <TouchableOpacity
               style={[styles.generateButton, { backgroundColor: theme.tint }]}
