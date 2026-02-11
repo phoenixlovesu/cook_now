@@ -24,10 +24,9 @@ export default function RootLayout() {
     Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
 
     if (Platform.OS === "ios") {
-      const isProd = !__DEV__;
-      const apiKey = isProd
-        ? Constants.expoConfig?.extra?.revenuecat?.iosProd
-        : Constants.expoConfig?.extra?.revenuecat?.iosTest;
+      const apiKey = Constants.expoConfig?.extra?.revenuecat?.iosProd;
+      Purchases.configure({ apiKey });
+
 
       Purchases.configure({ apiKey });
     }
