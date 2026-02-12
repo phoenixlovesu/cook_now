@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Cook Now - Recipes & Grocery",
+    "name": "Cook Now",
     "slug": "cook-now",
     "version": "1.0.1",
     "orientation": "portrait",
@@ -46,10 +46,7 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "cover",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+          "backgroundColor": "#4E908A"
         }
       ]
     ],
