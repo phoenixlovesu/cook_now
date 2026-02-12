@@ -6,9 +6,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
+import * as Calendar from 'expo-calendar';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRecipes, Recipe } from '@/data/recipes-context';
 import Purchases from 'react-native-purchases';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -17,11 +20,17 @@ import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
 export default function GroceryListScreen() {
   const { recipes, toggleIngredient } = useRecipes();
 
+  
   const colorScheme = useColorScheme() ?? 'light';
   const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  
 
   const [isPro, setIsPro] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
+  // --- RevenueCat: check purchase status & listen for updates
   useEffect(() => {
     const updateProStatus = async () => {
       try {
@@ -35,28 +44,28 @@ export default function GroceryListScreen() {
 
     updateProStatus();
 
-    Purchases.addCustomerInfoUpdateListener(info => {
+    const listener = (info: any) => {
       setIsPro(!!info.entitlements.active['Cook Now Pro']);
-    });
+    };
+    Purchases.addCustomerInfoUpdateListener(listener);
 
+    return () => {
+      Purchases.removeCustomerInfoUpdateListener(listener);
+    };
   }, []);
 
+  // --- Upgrade / restore purchase handlers
   const handleUpgrade = async () => {
     try {
       const offerings = await Purchases.getOfferings();
       const proPackage = offerings.current?.availablePackages[0];
-
       if (!proPackage) {
-        Alert.alert('Purchase failed', 'No products available for purchase.');
+        Alert.alert('Purchase failed', 'No products available.');
         return;
       }
-
       await Purchases.purchasePackage(proPackage);
-
     } catch (e: any) {
-      if (!e.userCancelled) {
-        Alert.alert('Purchase failed', e.message);
-      }
+      if (!e.userCancelled) Alert.alert('Purchase failed', e.message);
     }
   };
 
@@ -70,291 +79,283 @@ export default function GroceryListScreen() {
     }
   };
 
+  // --- Count missing ingredients for a recipe
   const countMissingIngredients = (recipe: Recipe) =>
     recipe.ingredients.filter(ing => !ing.hasIt).length;
 
-  const generateShoppingList = () => {
-    if (!isPro) {
-      Alert.alert(
-        'Premium Feature',
-        'Upgrade to Cook Now Pro to generate a shopping list!'
-      );
-      return;
-    }
+  // --- Open DateTimePicker for calendar event
+  const handlePickDate = (recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    setSelectedDate(new Date());
+    setShowPicker(true);
+  };
 
-    const missingItems: string[] = [];
-
-    recipes.forEach(recipe =>
-      recipe.ingredients.forEach(ing => {
-        if (!ing.hasIt) missingItems.push(ing.name);
-      })
-    );
-
-    if (missingItems.length === 0) {
-      Alert.alert('All set!', 'You have all ingredients for your recipes.');
-    } else {
-      Alert.alert(
-        'Shopping List',
-        missingItems.map(item => `• ${item}`).join('\n')
-      );
+  // --- When user selects a date/time from picker
+  const onDateChange = async (event: any, date?: Date) => {
+    setShowPicker(false);
+    if (date && selectedRecipe) {
+      setSelectedDate(date);
+      await addToCalendar(selectedRecipe, date);
+      setSelectedRecipe(null);
     }
   };
 
-  return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        { backgroundColor: theme.background }
-      ]}
-    >
-      <Text
-        style={[
-          styles.title,
-          { color: theme.textPrimary }
-        ]}
-      >
-        Grocery List
-      </Text>
+  // --- Add recipe to native calendar
+  const addToCalendar = async (recipe: Recipe, date: Date) => {
+    if (!isPro) return;
 
+    try {
+      const { status } = await Calendar.requestCalendarPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission required', 'Calendar access is needed.');
+        return;
+      }
+
+      const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+      const defaultCalendar = calendars.find(cal => cal.allowsModifications);
+
+      if (!defaultCalendar) {
+        Alert.alert('No editable calendar found');
+        return;
+      }
+
+      const endDate = new Date(date.getTime() + 60 * 60 * 1000); // 1 hr event
+      await Calendar.createEventAsync(defaultCalendar.id, {
+        title: `Cook: ${recipe.name}`,
+        startDate: date,
+        endDate,
+        notes: recipe.ingredients.map(i => `• ${i.name}`).join('\n'),
+        url: `cooknow://recipe/${recipe.id}`, // deep link to recipe
+        timeZone: 'UTC',
+      });
+
+      Alert.alert('Added to Calendar', `${recipe.name} added to your calendar.`);
+    } catch (e) {
+      console.log('Calendar error:', e);
+      Alert.alert('Failed to add to calendar');
+    }
+  };
+
+  // --- Main content of screen
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      
+     <Text style={[styles.title, { color: theme.textPrimary }]}>Grocery List</Text> 
+  
       {recipes.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text
-            style={[
-              styles.emptyText,
-              { color: theme.textSecondary }
-            ]}
-          >
+          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
             No saved recipes yet.
           </Text>
         </View>
       ) : (
-        <>
-          <ScrollView contentContainerStyle={styles.list}>
-            {recipes.map((recipe, index) => {
-              if (!isPro && index > 0) return null;
+        <ScrollView contentContainerStyle={styles.list}>
+          {recipes.map((recipe, index) => {
+            if (!isPro && index > 0) return null;
 
-              return (
-                <View
-                  key={recipe.id}
-                  style={[
-                    styles.recipeCard,
-                    {
-                      backgroundColor: theme.card,
-                      borderColor: theme.divider
-                    }
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.recipeName,
-                      { color: theme.textPrimary }
-                    ]}
+            return (
+              <View
+                key={recipe.id}
+                style={[
+                  styles.recipeCard,
+                  { backgroundColor: theme.card, borderColor: theme.divider },
+                ]}
+              >
+                <Text style={[styles.recipeName, { color: theme.textPrimary }]}>
+                  {recipe.name}
+                </Text>
+
+                {recipe.ingredients.map(ing => (
+                  <TouchableOpacity
+                    key={ing.name}
+                    style={styles.ingredientRow}
+                    onPress={() => toggleIngredient(recipe.id, ing.name)}
                   >
-                    {recipe.name}
+                    <Text style={styles.checkbox}>{ing.hasIt ? '✅' : '⬜'}</Text>
+                    <Text style={[styles.ingredientName, { color: theme.textPrimary }]}>
+                      {ing.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+
+                {isPro && countMissingIngredients(recipe) > 0 && (
+                  <Text style={[styles.missingCount, { color: theme.textSecondary }]}>
+                    Missing: {countMissingIngredients(recipe)}
                   </Text>
+                )}
 
-                  {recipe.ingredients.map(ing => (
-                    <TouchableOpacity
-                      key={ing.name}
-                      style={styles.ingredientRow}
-                      onPress={() =>
-                        toggleIngredient(recipe.id, ing.name)
-                      }
-                    >
-                      <Text style={styles.checkbox}>
-                        {ing.hasIt ? '✅' : '⬜'}
-                      </Text>
+                {/* Pro-only Calendar button */}
+                {isPro && (
+                  <TouchableOpacity
+                    style={[styles.calendarButton, { backgroundColor: theme.accent }]}
+                    onPress={() => handlePickDate(recipe)}
+                  >
+                    <Text style={[styles.calendarButtonText, { color: theme.buttonText }]}>
+                      Add to Calendar
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            );
+          })}
 
-                      <Text
-                        style={[
-                          styles.ingredientName,
-                          { color: theme.textPrimary }
-                        ]}
-                      >
-                        {ing.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-
-                  {isPro &&
-                    countMissingIngredients(recipe) > 0 && (
-                      <Text
-                        style={[
-                          styles.missingCount,
-                          { color: theme.textSecondary }
-                        ]}
-                      >
-                        Missing: {countMissingIngredients(recipe)}
-                      </Text>
-                    )}
-                </View>
-              );
-            })}
-          </ScrollView>
-
-          {!isPro && recipes.length > 0 && (
+          {/* Free users: show paywall overlay */}
+          {!isPro && recipes.length > 1 && (
             <BlurView
               intensity={50}
               tint={colorScheme === 'dark' ? 'dark' : 'light'}
               style={styles.blurOverlay}
             >
-              <View
-                style={[
-                  styles.overlayContent,
-                  { backgroundColor: theme.card }
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.overlayText,
-                    { color: theme.textPrimary }
-                  ]}
-                >
+              <View style={[styles.overlayContent, { backgroundColor: theme.card }]}>
+                <Text style={[styles.overlayText, { color: theme.textPrimary }]}>
                   Upgrade to Cook Now Pro to unlock:
-                  {'\n'}• Generate full shopping lists
-                  {'\n'}• Count missing ingredients
-                  {'\n'}• Advanced recipe filters
+                  {'\n'}• Add recipes to your calendar
                 </Text>
 
                 <TouchableOpacity
-                  style={[
-                    styles.upgradeButton,
-                    { backgroundColor: theme.accent }
-                  ]}
+                  style={[styles.upgradeButton, { backgroundColor: theme.accent }]}
                   onPress={handleUpgrade}
                 >
-                  <Text
-                    style={[
-                      styles.upgradeButtonText,
-                      { color: theme.buttonText }
-                    ]}
-                  >
+                  <Text style={[styles.upgradeButtonText, { color: theme.buttonText }]}>
                     Upgrade Now
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={{ marginTop: 12 }}
-                  onPress={handleRestore}
-                >
-                  <Text
-                    style={{ color: theme.accent }}
-                  >
-                    Restore Purchases
-                  </Text>
+                <TouchableOpacity style={{ marginTop: 12 }} onPress={handleRestore}>
+                  <Text style={{ color: theme.accent }}>Restore Purchases</Text>
                 </TouchableOpacity>
               </View>
             </BlurView>
           )}
 
-          {isPro && (
-            <TouchableOpacity
-              style={[
-                styles.generateButton,
-                { backgroundColor: theme.accent }
-              ]}
-              onPress={generateShoppingList}
-            >
-              <Text
-                style={[
-                  styles.generateButtonText,
-                  { color: theme.buttonText }
-                ]}
-              >
-                Generate Shopping List
-              </Text>
-            </TouchableOpacity>
+          {/* DateTimePicker modal */}
+          {showPicker && (
+            <DateTimePicker
+              value={selectedDate}
+              mode="datetime"
+              display={Platform.OS === 'ios' ? 'inline' : 'default'}
+              onChange={onDateChange}
+            />
           )}
-        </>
+        </ScrollView>
       )}
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 16,
+// --- Styles
+const styles = StyleSheet.create({ 
+
+  container: { 
+    flex: 1, 
+    paddingHorizontal: 16, 
+    paddingTop: 16 
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 16,
+
+  title: { 
+    fontSize: 28, 
+    fontWeight: '700', 
+    marginBottom: 16, 
+    fontFamily: Fonts.sans 
   },
-  list: {
-    paddingBottom: 24,
+
+  emptyContainer: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
   },
-  recipeCard: {
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    borderWidth: 1,
+
+  emptyText: { 
+    fontSize: 16, 
+    textAlign: 'center', 
+    fontFamily: Fonts.sans 
   },
-  recipeName: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
+
+  list: { 
+    paddingBottom: 200 
   },
-  ingredientRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
+
+  recipeCard: { 
+    padding: 12, 
+    borderRadius: 12, 
+    marginBottom: 16, 
+    borderWidth: 1 
   },
-  checkbox: {
-    fontSize: 18,
-    marginRight: 8,
+
+  recipeName: { 
+    fontSize: 18, 
+    fontWeight: '600', 
+    marginBottom: 8, 
+    fontFamily: Fonts.sans 
   },
-  ingredientName: {
-    fontSize: 16,
+
+  ingredientRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 4 
   },
-  missingCount: {
-    marginTop: 8,
-    fontSize: 14,
-    fontStyle: 'italic',
+
+  checkbox: { 
+    marginRight: 8, 
+    fontSize: 16 
   },
-  generateButton: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginVertical: 12,
+
+  ingredientName: { 
+    fontSize: 16, 
+    fontFamily: Fonts.sans 
   },
-  generateButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
+
+  missingCount: { 
+    marginTop: 4, 
+    fontSize: 14, 
+    fontFamily: Fonts.sans 
   },
-  blurOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+
+  calendarButton: { 
+    marginTop: 8, 
+    paddingVertical: 8, 
+    borderRadius: 8, 
+    alignItems: 'center' 
   },
-  overlayContent: {
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
+
+  calendarButtonText: { 
+    fontSize: 14, 
+    fontWeight: '600', 
+    fontFamily: Fonts.sans 
   },
-  overlayText: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: 'center',
-    fontWeight: '600',
+
+  blurOverlay: { 
+    ...StyleSheet.absoluteFillObject, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    paddingHorizontal: 24 
   },
-  upgradeButton: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: 'center',
+
+  overlayContent: { 
+    borderRadius: 12, 
+    padding: 16, 
+    alignItems: 'center', 
+    width: '90%' 
   },
-  upgradeButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
+
+  overlayText: { 
+    fontSize: 16, 
+    textAlign: 'center', 
+    marginBottom: 16, 
+    fontFamily: Fonts.sans 
   },
-  emptyContainer: {
-    marginTop: 48,
-    alignItems: 'center',
+
+  upgradeButton: { 
+    paddingVertical: 14, 
+    borderRadius: 12, 
+    width: '100%', 
+    alignItems: 'center' 
   },
-  emptyText: {
-    fontSize: 16,
+
+  upgradeButtonText: { 
+    fontSize: 16, 
+    fontWeight: '600', 
+    fontFamily: Fonts.sans 
   },
+
 });
