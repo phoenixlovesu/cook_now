@@ -100,21 +100,24 @@ export default function GroceryListScreen() {
             <Text style={styles.emptyText}>Add a recipe to get started!</Text>
           </View>
         ) : (
-          recipes.map((recipe, index) => {
-            if (!isPro && index > 0) return null;
+          recipes.map((recipe, recipeIndex) => {
+            if (!isPro && recipeIndex > 0) return null;
 
             return (
               <View
                 key={recipe.id}
-                style={[styles.recipeCard, { backgroundColor: theme.card, borderColor: theme.divider }]}
+                style={[
+                  styles.recipeCard,
+                  { backgroundColor: theme.card, borderColor: theme.divider },
+                ]}
               >
                 <Text style={styles.recipeName}>{recipe.name}</Text>
 
-                {recipe.ingredients.map(ing => (
+                {recipe.ingredients.map((ing, ingIndex) => (
                   <TouchableOpacity
-                    key={ing.name}
+                    key={`${recipe.id}-${ing.name}-${ingIndex}`}
                     style={styles.ingredientRow}
-                    onPress={() => toggleIngredient(recipe.id, ing.name)}
+                    onPress={() => toggleIngredient?.(recipe.id, ing.name)}
                   >
                     <Text style={styles.checkbox}>{ing.hasIt ? '✅' : '⬜'}</Text>
                     <Text style={styles.ingredientName}>{ing.name}</Text>
@@ -150,7 +153,12 @@ export default function GroceryListScreen() {
             style={styles.blurOverlay}
           >
             <View style={[styles.overlayContent, { backgroundColor: theme.card }]}>
-              <Text style={[styles.overlayText, { color: theme.textPrimary }]}>
+              <Text
+                style={[
+                  styles.overlayText,
+                  { color: theme.textPrimary, textAlign: 'center' },
+                ]}
+              >
                 Upgrade to Cook Now Pro to unlock:
                 {'\n'}• Generate grocery lists
                 {'\n'}• See missing ingredients
@@ -166,8 +174,10 @@ export default function GroceryListScreen() {
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={{ marginTop: 12 }} onPress={handleRestore}>
-                <Text style={{ color: theme.accent }}>Restore Purchases</Text>
+              <TouchableOpacity style={{ marginTop: 12, alignSelf: 'center' }} onPress={handleRestore}>
+                <Text style={{ color: theme.accent, textAlign: 'center' }}>
+                  Restore Purchases
+                </Text>
               </TouchableOpacity>
             </View>
           </BlurView>
@@ -262,13 +272,11 @@ const createStyles = (theme: ThemeType) =>
       width: '90%',
       borderRadius: 12,
       padding: 16,
-      
     },
     overlayText: {
       fontSize: 16,
       marginBottom: 12,
       fontFamily: Fonts.sans,
-      alignContent: 'center'
     },
     upgradeButton: {
       paddingVertical: 14,

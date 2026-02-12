@@ -21,7 +21,9 @@ export const lightTheme = {
   divider: "#DCE8E7",               // Borders, separators
   navbar: "#FFFFFF",                 // NavBar / TabBar background
   toggleTrack: "#DCE8E7",           // Track for switches/toggles
-  toggleThumb: "#3B9A9A",           // Thumb for switches/toggles
+  toggleThumb: "#3B9A9A",
+  buttonDisabled: '#a1a1a1', // grayish tint for saved button
+
 };
 
 export const darkTheme = {
@@ -34,7 +36,9 @@ export const darkTheme = {
   divider: "#263636",              
   navbar: "#1E2B2A",                 
   toggleTrack: "#263636",     
-  toggleThumb: "#3B9A9A",           
+  toggleThumb: "#3B9A9A",  
+  buttonDisabled: '#a1a1a1', // grayish tint for saved button
+         
 };
 
 

@@ -13,6 +13,7 @@ import { useRecipes } from '@/data/recipes-context';
 import RecipeImage from '@/components/ui/recipe-image';
 import { useTheme } from '@/context/ThemeProvider';
 import { ThemeType } from '@/context/ThemeProvider';
+import { MOCK_RECIPES } from '@/data/mock-recipes';
 
 
 export default function HomeScreen() {

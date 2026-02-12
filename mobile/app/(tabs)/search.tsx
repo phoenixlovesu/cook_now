@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,21 +9,33 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MOCK_RECIPES, Recipe } from '@/data/mock-recipes';
-import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RecipeImage from '@/components/ui/recipe-image';
 import { useTheme, ThemeType } from '@/context/ThemeProvider';
-
+import { useRecipes } from '@/data/recipes-context';
 
 export default function SearchScreen() {
   const router = useRouter();
   const [query, setQuery] = useState('');
 
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { theme } = useTheme();
   const styles = createStyles(theme);
 
-  // Filter mock recipes based on search query (name or ingredient)
-  const filteredRecipes: Recipe[] = MOCK_RECIPES.filter(recipe => {
+  const { fetchRecipesFromAPI, apiRecipes } = useRecipes();
+
+  // Fetch API recipes on mount
+  useEffect(() => {
+    fetchRecipesFromAPI('');
+  }, []);
+
+  // Combine mock recipes + API recipes only
+  const allSearchableRecipes: Recipe[] = [
+    ...MOCK_RECIPES,
+    ...apiRecipes,
+  ];
+
+  // Filter based on search input
+  const filteredRecipes: Recipe[] = allSearchableRecipes.filter(recipe => {
     const q = query.toLowerCase();
     return (
       recipe.name.toLowerCase().includes(q) ||
@@ -35,13 +47,11 @@ export default function SearchScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <View style={styles.container}>
         {/* Screen title */}
-        <Text style={[styles.title, { color: theme.textPrimary }]}>
-          Discover Recipes
-        </Text>
+        <Text style={styles.title}>Discover Recipes</Text>
 
         {/* Search input */}
         <TextInput
-          style={[styles.input, { borderColor: theme.divider, color: theme.textPrimary, backgroundColor: theme.card }]}
+          style={styles.input}
           placeholder="Search recipes or ingredients"
           placeholderTextColor={theme.textSecondary}
           value={query}
@@ -50,9 +60,7 @@ export default function SearchScreen() {
 
         {/* Show filtered results or empty state */}
         {filteredRecipes.length === 0 ? (
-          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-            No recipes found.
-          </Text>
+          <Text style={styles.emptyText}>No recipes found.</Text>
         ) : (
           <FlatList
             data={filteredRecipes}
@@ -61,7 +69,7 @@ export default function SearchScreen() {
             columnWrapperStyle={styles.row}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={[styles.card, { backgroundColor: theme.card }]}
+                style={styles.card}
                 onPress={() =>
                   router.push({
                     pathname: '/recipe/[id]',
@@ -69,15 +77,13 @@ export default function SearchScreen() {
                   })
                 }
               >
-                {/* Image container (always reserve space) */}
-                <View style={[styles.cardImageContainer, { backgroundColor: theme.divider }]}>
+                {/* Image container */}
+                <View style={styles.cardImageContainer}>
                   <RecipeImage uri={item.image} style={styles.cardImage} />
                 </View>
 
-                {/* Title at bottom */}
-                <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>
-                  {item.name}
-                </Text>
+                {/* Recipe title */}
+                <Text style={styles.cardTitle}>{item.name}</Text>
               </TouchableOpacity>
             )}
           />
@@ -87,75 +93,70 @@ export default function SearchScreen() {
   );
 }
 
+/* ===== Styles (one property per line) ===== */
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
-     safeArea: {
-    flex: 1,
-  },
-
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    fontFamily: Fonts.sans,
-    marginBottom: 16,
-  },
-
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    marginBottom: 16,
-    fontFamily: Fonts.sans,
-  },
-
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 24,
-    fontSize: 16,
-  },
-
-  row: {
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-
-  card: {
-    flex: 1,
-    borderRadius: 12,
-    padding: 8,
-    marginHorizontal: 4,
-    marginBottom: 8,
-    alignItems: 'center',
-  },
-
-  cardImageContainer: {
-    width: '100%',
-    height: 120,
-  },
-
-  cardImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    padding: 8,
-    textAlign: 'center',
-  },
-   
+    safeArea: {
+      flex: 1,
+    },
+    container: {
+      flex: 1,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: '700',
+      marginBottom: 16,
+      color: theme.textPrimary,
+      fontFamily: 'sans-serif',
+    },
+    input: {
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 16,
+      marginBottom: 16,
+      color: theme.textPrimary,
+      backgroundColor: theme.card,
+      fontFamily: 'sans-serif',
+    },
+    emptyText: {
+      textAlign: 'center',
+      marginTop: 24,
+      fontSize: 16,
+      color: theme.textSecondary,
+    },
+    row: {
+      justifyContent: 'space-between',
+      marginBottom: 16,
+    },
+    card: {
+      flex: 1,
+      borderRadius: 12,
+      padding: 8,
+      marginHorizontal: 4,
+      marginBottom: 8,
+      alignItems: 'center',
+      backgroundColor: theme.card,
+    },
+    cardImageContainer: {
+      width: '100%',
+      height: 120,
+      backgroundColor: theme.divider,
+    },
+    cardImage: {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'cover',
+    },
+    cardTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      padding: 8,
+      textAlign: 'center',
+      color: theme.textPrimary,
+      fontFamily: 'sans-serif',
+    },
   });
-
-
-
-
