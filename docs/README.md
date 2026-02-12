@@ -1,39 +1,66 @@
-# Cook Now MVP
+# Cook Now - Recipes & Grocery MVP
 
 ## Overview
-Turn saved recipes + fridge ingredients into meals users can actually make. 
-Users can:
-- Save favorite recipes
-- Add ingredients they have on hand
-- Discover recipes that match their available ingredients
+Cook Now helps users turn **saved recipes** and **fridge ingredients** into meals they can actually make. Users can:  
 
-This is a working mobile app MVP designed for TestFlight Submission.
+- Save favorite recipes (mock recipes or fetched from MealDB API)  
+- Add ingredients they have on hand  
+- Discover recipes that match their available ingredients  
+- Schedule recipes to their iOS calendar  
+- Access personalized grocery lists (for Cook Now Pro users)  
+
+This is a fully working **mobile MVP** designed for **TestFlight submission** to Shipyard and RevenueCat’s hackathon, following Eitan Bernath’s brief.  
 
 ## Tech Stack
-- Reaxt Native + Expo - cross-platform mobile development
-- JavaScript/TypeScript - mock recipes for MVP
-- RevenueCat - planned for in-app subscriptions (future build)
-- Expo-Router - navigation
+- **React Native + Expo** – cross-platform mobile development  
+- **JavaScript/TypeScript** – core logic and mock recipes  
+- **Expo Router** – navigation between screens  
+- **RevenueCat** – in-app purchases / subscriptions  
+- **MealDB API** – dynamic recipe data  
+- **Native iOS Calendar** – scheduling recipes  
 
-## Screens/Features
-- Onboarding
-- Home/My Recipes - saved recipes with detail view
-- Fridge - add ingredients, see suggested recipes based on fridge contents
-- Search/Discover - search recipes by name or ingredients
-- Add Recipe - users can create and save their own recipes
-- Recipe Detail - full recipe view with ingredients and instructions
-- Empty States - guidance for new users (e.g., no saved recipes or fridge items)
+## Screens / Features
 
-## Current MVP Status
-- Fully functional recipe saving and searching
-- Fridge-based suggestions with smart matching
-- Responsive recipe cards across screens
-- Connected screens and navigation
-- Keyboard/input works properly on web and mobile
+### Onboarding
+- Guides first-time users through app features.  
 
-## Next Steps / Roadmap
-- RevenueCat integration for subscriptions
-- Connect to a live recipe API for dynamic suggestions
-- UI/UX polishing (colors, animations, and layout consistency)
-- User authentication / login
-- Additional features: grocery list, step-by-step recipe parsing, store-specific recommendations
+### Home / My Recipes
+- Displays saved recipes in a **consistent card layout**.  
+- Supports **dark/light mode toggle** for accessibility (top-right corner).  
+- Clicking a recipe card opens **Recipe Detail** with:  
+  - Ingredients  
+  - Instructions  
+  - Link to online source  
+  - Save recipe if not already saved  
+  - Schedule recipe button  
+
+### Add Recipe
+- Accessible from the **Home empty state**.  
+- Users can input:  
+  - Recipe name  
+  - Ingredients  
+  - Instructions  
+  - Optional online link  
+- Recipes save to the user’s home screen immediately.  
+
+### Fridge
+- Users add ingredients (partial or full, **case-insensitive**) using an **Add button**.  
+- Ingredients display as **chips**, which can be removed individually.  
+- Filters and suggests recipes based on fridge contents.  
+
+### Search / Discover
+- Users filter recipes **as they type**, matching by name or ingredients.  
+- Works like a **smart search** across all available recipes.  
+
+### Grocery List
+- Generated automatically as users add/save recipes.  
+- **Preview-only** for free users (one-time view).  
+- **Cook Now Pro users** can:  
+  - Toggle ingredients they have  
+  - See updated missing ingredient counts on cards  
+  - Fully interact with generated grocery lists  
+
+### Schedule Recipe
+- On Recipe Detail screen:  
+  - Users select **date and time**  
+  - Confirmation popup shows **recipe name, date, time, and ingredients**  
