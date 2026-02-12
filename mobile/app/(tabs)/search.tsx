@@ -5,18 +5,21 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  Image,
   StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MOCK_RECIPES, Recipe } from '@/data/mock-recipes';
-import { Colors, Fonts } from '@/constants/theme';
+import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RecipeImage from '@/components/ui/recipe-image';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function SearchScreen() {
   const router = useRouter();
   const [query, setQuery] = useState('');
+
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
 
   // Filter mock recipes based on search query (name or ingredient)
   const filteredRecipes: Recipe[] = MOCK_RECIPES.filter(recipe => {
@@ -28,21 +31,27 @@ export default function SearchScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <View style={styles.container}>
-        <Text style={styles.title}>Discover Recipes</Text>
+        {/* Screen title */}
+        <Text style={[styles.title, { color: theme.textPrimary }]}>
+          Discover Recipes
+        </Text>
+
         {/* Search input */}
         <TextInput
-          style={styles.input}
+          style={[styles.input, { borderColor: theme.divider, color: theme.textPrimary, backgroundColor: theme.card }]}
           placeholder="Search recipes or ingredients"
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.textSecondary}
           value={query}
           onChangeText={setQuery}
         />
 
         {/* Show filtered results or empty state */}
         {filteredRecipes.length === 0 ? (
-          <Text style={styles.emptyText}>No recipes found.</Text>
+          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+            No recipes found.
+          </Text>
         ) : (
           <FlatList
             data={filteredRecipes}
@@ -51,7 +60,7 @@ export default function SearchScreen() {
             columnWrapperStyle={styles.row}
             renderItem={({ item }) => (
               <TouchableOpacity
-                style={styles.card}
+                style={[styles.card, { backgroundColor: theme.card }]}
                 onPress={() =>
                   router.push({
                     pathname: '/recipe/[id]',
@@ -59,13 +68,15 @@ export default function SearchScreen() {
                   })
                 }
               >
-              {/* Image container (always reserve space) */}
-              <View style={styles.cardImageContainer}>
-                <RecipeImage uri={item.image} style={styles.cardImage} />
-              </View>
+                {/* Image container (always reserve space) */}
+                <View style={[styles.cardImageContainer, { backgroundColor: theme.divider }]}>
+                  <RecipeImage uri={item.image} style={styles.cardImage} />
+                </View>
 
                 {/* Title at bottom */}
-                <Text style={styles.cardTitle}>{item.name}</Text>
+                <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>
+                  {item.name}
+                </Text>
               </TouchableOpacity>
             )}
           />
@@ -78,7 +89,6 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
 
   container: {
@@ -86,30 +96,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
   },
-    title: {
-      fontSize: 28,
-      fontWeight: '700',
-      fontFamily: Fonts.sans,
-      marginBottom: 24,
-      color: Colors.light.text,
-    },
-  
+
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    fontFamily: Fonts.sans,
+    marginBottom: 16,
+  },
 
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
     marginBottom: 16,
+    fontFamily: Fonts.sans,
   },
 
   emptyText: {
     textAlign: 'center',
     marginTop: 24,
     fontSize: 16,
-    color: '#999',
   },
 
   row: {
@@ -119,7 +127,6 @@ const styles = StyleSheet.create({
 
   card: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
     borderRadius: 12,
     padding: 8,
     marginHorizontal: 4,
@@ -130,19 +137,12 @@ const styles = StyleSheet.create({
   cardImageContainer: {
     width: '100%',
     height: 120,
-    backgroundColor: '#eee', // placeholder background
   },
 
   cardImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
-  },
-
-  cardImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#ddd',
   },
 
   cardTitle: {
@@ -152,4 +152,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
 

@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   FlatList,
-  Image,
   StyleSheet,
   Keyboard,
   Platform,
@@ -17,8 +16,13 @@ import { router } from 'expo-router';
 import { MOCK_RECIPES } from '@/data/mock-recipes';
 import type { Recipe } from '@/data/recipes-context';
 import RecipeImage from '@/components/ui/recipe-image';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
 
 export default function FridgeScreen() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+
   const [fridgeItems, setFridgeItems] = useState<string[]>([]);
   const [input, setInput] = useState('');
 
@@ -47,36 +51,46 @@ export default function FridgeScreen() {
     : [];
 
   const content = (
-    <View style={styles.container}>
-      <Text style={styles.title}>What's in My Fridge</Text>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Text style={[styles.title, { color: theme.textPrimary }]}>{`What's in My Fridge`}</Text>
 
       <View style={styles.inputRow}>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            { 
+              borderColor: theme.divider, 
+              color: theme.textPrimary, 
+              fontFamily: Fonts.sans 
+            }
+          ]}
           placeholder="Add ingredient..."
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.textSecondary}
           value={input}
           onChangeText={setInput}
           onSubmitEditing={handleAddIngredient}
           returnKeyType="done"
         />
-        <TouchableOpacity style={styles.addButton} onPress={handleAddIngredient}>
-          <Text style={styles.addButtonText}>Add</Text>
+        <TouchableOpacity
+          style={[styles.addButton, { backgroundColor: theme.accent }]}
+          onPress={handleAddIngredient}
+        >
+          <Text style={[styles.addButtonText, { fontFamily: Fonts.sans }]}>Add</Text>
         </TouchableOpacity>
       </View>
 
       {fridgeItems.length > 0 && (
         <View style={styles.chipsContainer}>
           {fridgeItems.map(item => (
-            <View key={item} style={styles.chip}>
-              <Text style={styles.chipText}>{item}</Text>
+            <View key={item} style={[styles.chip, { backgroundColor: theme.card }]}>
+              <Text style={[styles.chipText, { color: theme.textPrimary, fontFamily: Fonts.sans }]}>{item}</Text>
             </View>
           ))}
         </View>
       )}
 
       {recipesToShow.length === 0 ? (
-        <Text style={styles.emptyText}>
+        <Text style={[styles.emptyText, { color: theme.textSecondary, fontFamily: Fonts.sans }]}>
           {fridgeItems.length === 0
             ? 'Add ingredients to see recipes you can make.'
             : 'No recipes match these ingredients.'}
@@ -89,7 +103,7 @@ export default function FridgeScreen() {
           columnWrapperStyle={styles.row}
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={styles.card}
+              style={[styles.card, { backgroundColor: theme.card }]}
               onPress={() =>
                 router.push({
                   pathname: '/recipe/[id]',
@@ -97,13 +111,12 @@ export default function FridgeScreen() {
                 })
               }
             >
-              {/* Image container (always reserve space) */}
               <View style={styles.cardImageContainer}>
                 <RecipeImage uri={item.image} style={styles.cardImage} />
               </View>
-
-                {/* Title at bottom */}
-                <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={[styles.cardTitle, { color: theme.textPrimary, fontFamily: Fonts.sans }]}>
+                {item.name}
+              </Text>
             </TouchableOpacity>
           )}
         />
@@ -112,7 +125,7 @@ export default function FridgeScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
       {Platform.OS === 'web' ? (
         content
       ) : (
@@ -129,15 +142,7 @@ export default function FridgeScreen() {
   );
 }
 
-
-
-/* ======== Styles ============ */
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-
   container: {
     flex: 1,
     paddingHorizontal: 16,
@@ -158,7 +163,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -167,7 +171,6 @@ const styles = StyleSheet.create({
   },
 
   addButton: {
-    backgroundColor: '#3498db',
     borderRadius: 12,
     justifyContent: 'center',
     paddingHorizontal: 16,
@@ -186,7 +189,6 @@ const styles = StyleSheet.create({
   },
 
   chip: {
-    backgroundColor: '#eee',
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -202,7 +204,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 24,
     fontSize: 16,
-    color: '#999',
   },
 
   row: {
@@ -212,7 +213,6 @@ const styles = StyleSheet.create({
 
   card: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
     borderRadius: 12,
     padding: 8,
     marginHorizontal: 4,
@@ -223,19 +223,13 @@ const styles = StyleSheet.create({
   cardImageContainer: {
     width: '100%',
     height: 120,
-    backgroundColor: '#eee', // placeholder background
+    backgroundColor: '#eee',
   },
 
   cardImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
-  },
-
-  cardImagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#ddd',
   },
 
   cardTitle: {
@@ -245,4 +239,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

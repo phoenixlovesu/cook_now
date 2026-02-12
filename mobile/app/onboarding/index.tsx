@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Colors, Fonts } from '@/constants/theme';
+import { Fonts, lightTheme } from '@/constants/theme';
 
 // Get the device screen width; onboarding pages takes up the full screen
 const { width } = Dimensions.get('window');
@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
   skipText: {
     fontSize: 16,
     color: '#FFFFFF',
+    fontFamily: Fonts.sans,
   },
 
   page: {
@@ -145,9 +146,12 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 36,
     fontWeight: '700',
+    fontFamily: Fonts.sans,
     color: '#FFFFFF',
-    letterSpacing: 0.5,
     textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
 
   welcome: {
@@ -155,6 +159,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 40,
     textAlign: 'center',
+    fontFamily: Fonts.sans,
   },
 
   // wrapper for title + subtitle
@@ -167,15 +172,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '600',
+    fontFamily: Fonts.sans,
     color: '#FFFFFF',
     textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
+
 
   subtitle: {
     fontSize: 16,
-    color: '#FFFFFF',
+    fontFamily: Fonts.sans,
+    color: '#F5F5F5',
     lineHeight: 22,
     textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
 
   dots: {
@@ -201,16 +215,17 @@ const styles = StyleSheet.create({
     bottom: 40,
     left: 24,
     right: 24,
-    backgroundColor: Colors.light.tint,
+    backgroundColor: lightTheme.accent,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
 
   buttonText: {
-    color: Colors.light.background,
+    color: lightTheme.buttonText,
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: Fonts.sans,
   },
 });
 
