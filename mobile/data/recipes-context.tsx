@@ -1,21 +1,3 @@
-/* 
-============================================
-RevenueCat Monetization Plan
-============================================
-
-TODO: Integrate RevenueCat SDK for iOS and Android
-- Manage subscriptions / in-app purchases
-- Premium features could include:
-• Access to API recipes
-• Exclusive recipe sets
-• Ingredient meal planning suggestions
-- Implementation plan:
-1. Install RevenueCat SDK (react-native-purchases)
-2. Wrap app in PurchasesProvider / configure API key
-3. Track subscription status in RecipesContext
-4. Conditionally unlock premium features based on subscription
-*/
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { MOCK_RECIPES, Recipe, Ingredient, NewRecipe } from './mock-recipes';
 
@@ -25,40 +7,35 @@ type RecipesContextType = {
   getRecipeById: (id: string) => Recipe | undefined;
   toggleIngredient: (recipeId: string, ingredientName: string) => void;
   suggestRecipes: (fridgeItems: string[]) => Recipe[];
+  fetchRecipesFromAPI: (query?: string) => Promise<void>;
 };
 
 const RecipesContext = createContext<RecipesContextType | undefined>(undefined);
 
-
 export const RecipesProvider = ({ children }: { children: ReactNode }) => {
-  // Start empty to show empty state on home
   const [recipes, setRecipes] = useState<Recipe[]>([]);
 
   /* ===== Add Recipe ===== */
-const addRecipe = (recipe: NewRecipe | Recipe) => {
-  setRecipes(prev => {
-    // If recipe already has an id (ex: from mock recipes)
-    if ('id' in recipe) {
-      if (prev.some(r => r.id === recipe.id)) {
-        return prev;
+  const addRecipe = (recipe: NewRecipe | Recipe) => {
+    setRecipes(prev => {
+      if ('id' in recipe) {
+        if (prev.some(r => r.id === recipe.id)) return prev;
+        return [...prev, recipe];
       }
-      return [...prev, recipe];
-    }
 
-    // User-created recipe → generate simple ID
-    const newRecipe: Recipe = {
-      ...recipe,
-      id: Date.now().toString(),
-    };
+      const newRecipe: Recipe = {
+        ...recipe,
+        id: Date.now().toString(),
+        source: 'user',
+      };
 
-    return [...prev, newRecipe];
-  });
-};
+      return [...prev, newRecipe];
+    });
+  };
 
-
-// Find recipe by ID across saved + mock recipes
-const getRecipeById = (id: string) =>
-  recipes.find(r => r.id === id) || MOCK_RECIPES.find(r => r.id === id);
+  /* ===== Get recipe by ID ===== */
+  const getRecipeById = (id: string) =>
+    recipes.find(r => r.id === id) || MOCK_RECIPES.find(r => r.id === id);
 
   /* ===== Toggle ingredient checkbox ===== */
   const toggleIngredient = (recipeId: string, ingredientName: string) => {
@@ -68,9 +45,7 @@ const getRecipeById = (id: string) =>
           ? {
               ...recipe,
               ingredients: recipe.ingredients.map(ing =>
-                ing.name === ingredientName
-                  ? { ...ing, hasIt: !ing.hasIt }
-                  : ing
+                ing.name === ingredientName ? { ...ing, hasIt: !ing.hasIt } : ing
               ),
             }
           : recipe
@@ -79,17 +54,65 @@ const getRecipeById = (id: string) =>
   };
 
   /* ===== Suggest recipes based on fridge items ===== */
-const suggestRecipes = (fridgeItems: string[]) => {
-  return MOCK_RECIPES.filter(recipe =>
-    recipe.ingredients.some(ing =>
-      fridgeItems.includes(ing.name.toLowerCase())
-    )
-  );
-};
+  const suggestRecipes = (fridgeItems: string[]) => {
+    return MOCK_RECIPES.filter(recipe =>
+      recipe.ingredients.some(ing =>
+        fridgeItems.includes(ing.name.toLowerCase())
+      )
+    );
+  };
+
+  /* ===== Fetch recipes from MealDB API ===== */
+  const fetchRecipesFromAPI = async (query?: string) => {
+    try {
+      const url = query
+        ? `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(
+            query
+          )}`
+        : 'https://www.themealdb.com/api/json/v1/1/search.php?s=';
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.meals) return; // no results
+
+      const apiRecipes: Recipe[] = data.meals.map((meal: any) => {
+        // Convert MealDB ingredients (up to 20 fields) into array
+        const ingredients: Ingredient[] = [];
+        for (let i = 1; i <= 20; i++) {
+          const name = meal[`strIngredient${i}`];
+          if (name && name.trim() !== '') {
+            ingredients.push({ name: name.trim(), hasIt: false });
+          }
+        }
+
+        return {
+          id: meal.idMeal,
+          name: meal.strMeal,
+          ingredients,
+          instructions: meal.strInstructions || '',
+          link: meal.strSource || meal.strYoutube || undefined,
+          image: meal.strMealThumb || undefined,
+          source: 'api',
+        };
+      });
+
+      setRecipes(prev => [...prev, ...apiRecipes]);
+    } catch (e) {
+      console.log('MealDB fetch error:', e);
+    }
+  };
 
   return (
     <RecipesContext.Provider
-      value={{ recipes, addRecipe, getRecipeById, toggleIngredient, suggestRecipes }}
+      value={{
+        recipes,
+        addRecipe,
+        getRecipeById,
+        toggleIngredient,
+        suggestRecipes,
+        fetchRecipesFromAPI,
+      }}
     >
       {children}
     </RecipesContext.Provider>
@@ -103,7 +126,8 @@ export const useRecipes = () => {
   return context;
 };
 
-export type {Recipe, Ingredient };
+export type { Recipe, Ingredient };
+
 
 
 
