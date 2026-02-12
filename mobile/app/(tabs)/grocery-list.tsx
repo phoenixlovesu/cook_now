@@ -15,12 +15,15 @@ import * as Calendar from 'expo-calendar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRecipes, Recipe } from '@/data/recipes-context';
 import Purchases from 'react-native-purchases';
-import { useTheme } from '@/context/ThemeProvider'; // global theme
+import { useTheme, ThemeType } from '@/context/ThemeProvider';
 import { Fonts } from '@/constants/theme';
 
 export default function GroceryListScreen() {
   const { recipes, toggleIngredient } = useRecipes();
-  const { theme } = useTheme();
+  
+  const { theme, toggleTheme, isDark } = useTheme();
+  const styles = createStyles(theme);
+
 
   const [isPro, setIsPro] = useState(false);
 
@@ -295,9 +298,9 @@ export default function GroceryListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-
-  container: {
+const createStyles = (theme: ThemeType) =>
+  StyleSheet.create({
+    container: {
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -477,3 +480,6 @@ const styles = StyleSheet.create({
   },
 
 });
+
+  
+  

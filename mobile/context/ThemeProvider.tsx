@@ -1,31 +1,49 @@
+/**
+ * ThemeProvider.tsx
+ *
+ * Global theme state for Cook Now.
+ * Controls light / dark mode toggle across the app.
+ */
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { lightTheme, darkTheme } from '@/constants/theme';
 
-type Theme = typeof lightTheme;
+export type ThemeType = typeof lightTheme;
 
-interface ThemeContextProps {
-  theme: Theme;
+export type ThemeContextProps = {
+  theme: ThemeType;
+  isDark: boolean;
   toggleTheme: () => void;
-}
+};
 
-export const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
+export const ThemeContext = createContext<ThemeContextProps | undefined>(
+  undefined
+);
 
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+// --- Provider component ---
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [isDark, setIsDark] = useState(false);
 
-  const toggleTheme = () => setIsDark(prev => !prev);
+  // Toggle between light and dark theme
+  const toggleTheme = () => {
+    setIsDark(prev => !prev);
+  };
 
   const theme = isDark ? darkTheme : lightTheme;
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, isDark, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
-};
+}
 
-export const useTheme = () => {
+// --- Custom hook for safe access ---
+export function useTheme() {
   const context = useContext(ThemeContext);
-  if (!context) throw new Error('useTheme must be used within ThemeProvider');
+  if (!context) {
+    throw new Error('useTheme must be used within ThemeProvider');
+  }
   return context;
-};
+}
+

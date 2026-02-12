@@ -18,10 +18,11 @@ import type { Recipe } from '@/data/recipes-context';
 import RecipeImage from '@/components/ui/recipe-image';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
+import { useTheme, ThemeType } from '@/context/ThemeProvider';
 
 export default function FridgeScreen() {
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+    const { theme, toggleTheme, isDark } = useTheme();
+    const styles = createStyles(theme);
 
   const [fridgeItems, setFridgeItems] = useState<string[]>([]);
   const [input, setInput] = useState('');
@@ -142,8 +143,9 @@ export default function FridgeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+const createStyles = (theme: ThemeType) =>
+  StyleSheet.create({
+      container: {
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 16,
@@ -239,3 +241,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+    

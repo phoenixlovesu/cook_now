@@ -17,18 +17,16 @@ import { useRouter } from 'expo-router';
 import { useRecipes } from '@/data/recipes-context';
 import { Ingredient } from '@/data/mock-recipes';
 import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme, ThemeType } from '@/context/ThemeProvider';
 
 export default function AddRecipeScreen() {
   const router = useRouter();
   const { addRecipe } = useRecipes();
 
-  /**
-   * Resolve active theme (light / dark)
-   */
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
-  const styles = createStyles(theme);
+
+    const { toggleTheme, isDark, theme } = useTheme();
+    const styles = createStyles(theme);
+  
 
   // Local state for form fields
   const [name, setName] = useState('');
@@ -153,7 +151,7 @@ export default function AddRecipeScreen() {
 }
 
 /* ===== Theme-aware styles ===== */
-const createStyles = (theme: typeof lightTheme) =>
+const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     safeArea: {
       flex: 1,

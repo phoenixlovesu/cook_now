@@ -11,7 +11,8 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useRecipes } from '@/data/recipes-context';
 import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme, ThemeType } from '@/context/ThemeProvider';
+
 
 export default function RecipeDetailScreen() {
   const router = useRouter();
@@ -21,9 +22,7 @@ export default function RecipeDetailScreen() {
   // Find recipe either saved or in mock
   const recipe = getRecipeById(id || '');
 
-  // Resolve theme
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const { theme, toggleTheme, isDark } = useTheme();
   const styles = createStyles(theme);
 
   if (!recipe) {
@@ -76,7 +75,7 @@ export default function RecipeDetailScreen() {
 }
 
 /* ===== Theme-aware styles ===== */
-const createStyles = (theme: typeof lightTheme) =>
+const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     container: {
       flex: 1,

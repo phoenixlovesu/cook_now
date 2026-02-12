@@ -8,26 +8,34 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import { useRecipes } from '@/data/recipes-context';
 import RecipeImage from '@/components/ui/recipe-image';
-import { lightTheme, darkTheme } from '@/constants/theme';
+import { useTheme } from '@/context/ThemeProvider';
+import { ThemeType } from '@/context/ThemeProvider';
+
 
 export default function HomeScreen() {
   const router = useRouter();
   const { recipes: savedRecipes } = useRecipes();
 
-  // Select correct theme based on system mode
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
-
+  const { toggleTheme, isDark, theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.title}>My Recipes</Text>
+
+          <TouchableOpacity
+            onPress={toggleTheme}
+            style={styles.themeToggle}
+            accessibilityLabel="Toggle dark mode"
+          >
+          <Text style={styles.toggleIcon}>
+            {isDark ? '☀️' : '🌙'}
+          </Text>
+        </TouchableOpacity>
 
         {savedRecipes.length === 0 ? (
           <View style={styles.center}>
@@ -75,7 +83,7 @@ export default function HomeScreen() {
 /* ================================
    Themed Styles
 ================================ */
-const createStyles = (theme: typeof lightTheme) =>
+const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
     safeArea: {
       flex: 1,
@@ -94,6 +102,23 @@ const createStyles = (theme: typeof lightTheme) =>
       marginBottom: 16,
       color: theme.textPrimary,
     },
+
+      themeToggle: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: theme.card,
+    padding: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  toggleIcon: {
+    fontSize: 18,
+  },
 
     center: {
       flex: 1,

@@ -12,14 +12,15 @@ import { MOCK_RECIPES, Recipe } from '@/data/mock-recipes';
 import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RecipeImage from '@/components/ui/recipe-image';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme, ThemeType } from '@/context/ThemeProvider';
+
 
 export default function SearchScreen() {
   const router = useRouter();
   const [query, setQuery] = useState('');
 
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const { theme, toggleTheme, isDark } = useTheme();
+  const styles = createStyles(theme);
 
   // Filter mock recipes based on search query (name or ingredient)
   const filteredRecipes: Recipe[] = MOCK_RECIPES.filter(recipe => {
@@ -86,8 +87,9 @@ export default function SearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
+const createStyles = (theme: ThemeType) =>
+  StyleSheet.create({
+     safeArea: {
     flex: 1,
   },
 
@@ -151,6 +153,9 @@ const styles = StyleSheet.create({
     padding: 8,
     textAlign: 'center',
   },
-});
+   
+  });
+
+
 
 
