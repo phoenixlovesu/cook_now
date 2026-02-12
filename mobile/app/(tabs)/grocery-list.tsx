@@ -1,37 +1,28 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Platform,
-  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import * as Calendar from 'expo-calendar';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useRecipes, Recipe } from '@/data/recipes-context';
 import Purchases from 'react-native-purchases';
+import { useRouter } from 'expo-router';
+
+import { useRecipes, Recipe } from '@/data/recipes-context';
 import { useTheme, ThemeType } from '@/context/ThemeProvider';
 import { Fonts } from '@/constants/theme';
 
 export default function GroceryListScreen() {
+  const router = useRouter();
   const { recipes, toggleIngredient } = useRecipes();
-  
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { theme } = useTheme();
   const styles = createStyles(theme);
 
-
   const [isPro, setIsPro] = useState(false);
-
-  // --- Calendar selection state ---
-  const [showPicker, setShowPicker] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // --- RevenueCat: check purchase status & listen for updates ---
   useEffect(() => {
@@ -50,6 +41,7 @@ export default function GroceryListScreen() {
     const listener = (info: any) => {
       setIsPro(!!info.entitlements.active['Cook Now Pro']);
     };
+
     Purchases.addCustomerInfoUpdateListener(listener);
 
     return () => {
@@ -57,122 +49,66 @@ export default function GroceryListScreen() {
     };
   }, []);
 
-  // --- Upgrade / restore purchase handlers ---
+  // --- Handle upgrade purchase ---
   const handleUpgrade = async () => {
     try {
       const offerings = await Purchases.getOfferings();
       const proPackage = offerings.current?.availablePackages[0];
+
       if (!proPackage) {
-        Alert.alert('Purchase failed', 'No products available.');
+        alert('Purchase failed: No products available.');
         return;
       }
+
       await Purchases.purchasePackage(proPackage);
     } catch (e: any) {
-      if (!e.userCancelled) Alert.alert('Purchase failed', e.message);
+      if (!e.userCancelled) alert('Purchase failed: ' + e.message);
     }
   };
 
+  // --- Handle restore purchases ---
   const handleRestore = async () => {
     try {
       const info = await Purchases.restorePurchases();
       setIsPro(!!info.entitlements.active['Cook Now Pro']);
-      Alert.alert('Restored', 'Your purchases have been restored.');
+      alert('Your purchases have been restored.');
     } catch (e: any) {
-      Alert.alert('Restore failed', e.message);
+      alert('Restore failed: ' + e.message);
     }
   };
 
-  // --- Count missing ingredients for a recipe ---
+  // --- Count missing ingredients ---
   const countMissingIngredients = (recipe: Recipe) =>
-    recipe.ingredients.filter(ing => !ing.hasIt).length;
+    recipe.ingredients.filter(i => !i.hasIt).length;
 
-  // --- Open DateTimePicker for calendar event ---
-  const handlePickDate = (recipe: Recipe) => {
-    setSelectedRecipe(recipe);
-    setSelectedDate(new Date());
-    setShowPicker(true);
-  };
-
-  // --- When user selects a date/time from picker ---
-  const onDateChange = (event: any, date?: Date) => {
-    setShowPicker(false);
-    if (date && selectedRecipe) {
-      setSelectedDate(date);
-      setShowConfirmModal(true); // open confirmation modal
-    }
-  };
-
-  // --- Add recipe to native calendar ---
-  const addToCalendar = async (recipe: Recipe, date: Date) => {
-    if (!isPro) return;
-
-    try {
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission required', 'Calendar access is needed.');
-        return;
-      }
-
-      const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
-      const defaultCalendar = calendars.find(cal => cal.allowsModifications);
-
-      if (!defaultCalendar) {
-        Alert.alert('No editable calendar found');
-        return;
-      }
-
-      const endDate = new Date(date.getTime() + 60 * 60 * 1000); // 1 hr event
-      await Calendar.createEventAsync(defaultCalendar.id, {
-        title: `Cook: ${recipe.name}`,
-        startDate: date,
-        endDate,
-        notes: recipe.ingredients.map(i => `• ${i.name}`).join('\n'),
-        url: `cooknow://recipe/${recipe.id}`, // deep link to recipe
-        timeZone: 'UTC',
-      });
-
-      Alert.alert('Added to Calendar', `${recipe.name} added to your calendar.`);
-    } catch (e) {
-      console.log('Calendar error:', e);
-      Alert.alert('Failed to add to calendar');
-    }
-  };
-
-  // --- Confirm adding to calendar ---
-  const handleConfirmCalendar = async () => {
-    if (selectedRecipe) {
-      await addToCalendar(selectedRecipe, selectedDate);
-    }
-    setShowConfirmModal(false);
-    setSelectedRecipe(null);
+  // --- Navigate to Schedule Recipe screen ---
+  const handleScheduleRecipe = (recipe: Recipe) => {
+    router.push({
+      pathname: '/calendar/schedule-recipe',
+      params: { id: recipe.id },
+    });
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <Text style={[styles.title, { color: theme.textPrimary }]}>Grocery List</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Grocery List</Text>
 
-      {recipes.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-            No saved recipes yet.
-          </Text>
-        </View>
-      ) : (
-        <ScrollView contentContainerStyle={styles.list}>
-          {recipes.map((recipe, index) => {
+        {recipes.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>Your grocery list is empty.</Text>
+            <Text style={styles.emptyText}>Add a recipe to get started!</Text>
+          </View>
+        ) : (
+          recipes.map((recipe, index) => {
             if (!isPro && index > 0) return null;
 
             return (
               <View
                 key={recipe.id}
-                style={[
-                  styles.recipeCard,
-                  { backgroundColor: theme.card, borderColor: theme.divider },
-                ]}
+                style={[styles.recipeCard, { backgroundColor: theme.card, borderColor: theme.divider }]}
               >
-                <Text style={[styles.recipeName, { color: theme.textPrimary }]}>
-                  {recipe.name}
-                </Text>
+                <Text style={styles.recipeName}>{recipe.name}</Text>
 
                 {recipe.ingredients.map(ing => (
                   <TouchableOpacity
@@ -181,305 +117,169 @@ export default function GroceryListScreen() {
                     onPress={() => toggleIngredient(recipe.id, ing.name)}
                   >
                     <Text style={styles.checkbox}>{ing.hasIt ? '✅' : '⬜'}</Text>
-                    <Text style={[styles.ingredientName, { color: theme.textPrimary }]}>
-                      {ing.name}
-                    </Text>
+                    <Text style={styles.ingredientName}>{ing.name}</Text>
                   </TouchableOpacity>
                 ))}
 
                 {isPro && countMissingIngredients(recipe) > 0 && (
-                  <Text style={[styles.missingCount, { color: theme.textSecondary }]}>
+                  <Text style={styles.missingCount}>
                     Missing: {countMissingIngredients(recipe)}
                   </Text>
                 )}
 
-                {/* Pro-only Calendar button */}
                 {isPro && (
                   <TouchableOpacity
                     style={[styles.calendarButton, { backgroundColor: theme.accent }]}
-                    onPress={() => handlePickDate(recipe)}
+                    onPress={() => handleScheduleRecipe(recipe)}
                   >
                     <Text style={[styles.calendarButtonText, { color: theme.buttonText }]}>
-                      Add to Calendar
+                      Schedule Recipe
                     </Text>
                   </TouchableOpacity>
                 )}
               </View>
             );
-          })}
+          })
+        )}
 
-          {/* Free users: show paywall overlay */}
-          {!isPro && recipes.length > 1 && (
-            <BlurView
-              intensity={50}
-              tint={Platform.OS === 'ios' ? 'light' : 'light'}
-              style={styles.blurOverlay}
-            >
-              <View style={[styles.overlayContent, { backgroundColor: theme.card }]}>
-                <Text style={[styles.overlayText, { color: theme.textPrimary }]}>
-                  Upgrade to Cook Now Pro to unlock:
-                  {'\n'}• Add recipes to your calendar
+        {/* --- Pro upgrade overlay --- */}
+        {!isPro && recipes.length > 1 && (
+          <BlurView
+            intensity={50}
+            tint={Platform.OS === 'ios' ? 'light' : 'light'}
+            style={styles.blurOverlay}
+          >
+            <View style={[styles.overlayContent, { backgroundColor: theme.card }]}>
+              <Text style={[styles.overlayText, { color: theme.textPrimary }]}>
+                Upgrade to Cook Now Pro to unlock:
+                {'\n'}• Generate grocery lists
+                {'\n'}• See missing ingredients
+                {'\n'}• Schedule recipes
+              </Text>
+
+              <TouchableOpacity
+                style={[styles.upgradeButton, { backgroundColor: theme.accent }]}
+                onPress={handleUpgrade}
+              >
+                <Text style={[styles.upgradeButtonText, { color: theme.buttonText }]}>
+                  Upgrade Now
                 </Text>
+              </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={[styles.upgradeButton, { backgroundColor: theme.accent }]}
-                  onPress={handleUpgrade}
-                >
-                  <Text style={[styles.upgradeButtonText, { color: theme.buttonText }]}>
-                    Upgrade Now
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={{ marginTop: 12 }} onPress={handleRestore}>
-                  <Text style={{ color: theme.accent }}>Restore Purchases</Text>
-                </TouchableOpacity>
-              </View>
-            </BlurView>
-          )}
-
-          {/* DateTimePicker modal */}
-          {showPicker && (
-            <DateTimePicker
-              value={selectedDate}
-              mode="datetime"
-              display="default"
-              onChange={onDateChange}
-            />
-          )}
-
-          {/* Confirmation modal */}
-          <Modal visible={showConfirmModal} transparent animationType="slide">
-            <View style={styles.modalOverlay}>
-              <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
-                <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>
-                  Confirm Calendar Event
-                </Text>
-                <Text style={[styles.modalText, { color: theme.textPrimary }]}>
-                  Recipe: {selectedRecipe?.name}
-                </Text>
-                <Text style={[styles.modalText, { color: theme.textPrimary }]}>
-                  Date: {selectedDate.toLocaleString()}
-                </Text>
-                <Text style={[styles.modalText, { color: theme.textPrimary }]}>
-                  Ingredients:
-                  {'\n'}
-                  {selectedRecipe?.ingredients.map(i => `• ${i.name}`).join('\n')}
-                </Text>
-
-                <Text style={[styles.modalLink, { color: theme.accent }]}>
-                  Link: cooknow://recipe/{selectedRecipe?.id}
-                </Text>
-
-                <View style={styles.modalButtons}>
-                  <TouchableOpacity
-                    style={[styles.confirmButton, { backgroundColor: theme.accent }]}
-                    onPress={handleConfirmCalendar}
-                  >
-                    <Text style={[styles.confirmButtonText, { color: theme.buttonText }]}>
-                      Add to Calendar
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.cancelButton, { borderColor: theme.accent }]}
-                    onPress={() => setShowConfirmModal(false)}
-                  >
-                    <Text style={[styles.cancelButtonText, { color: theme.accent }]}>
-                      Cancel
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <TouchableOpacity style={{ marginTop: 12 }} onPress={handleRestore}>
+                <Text style={{ color: theme.accent }}>Restore Purchases</Text>
+              </TouchableOpacity>
             </View>
-          </Modal>
-        </ScrollView>
-      )}
+          </BlurView>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
+/* ===== Theme-aware styles ===== */
 const createStyles = (theme: ThemeType) =>
   StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
     container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
+      flexGrow: 1,
+      paddingHorizontal: 16,
+      paddingBottom: 32,
+      paddingTop: 16,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: '700',
+      marginBottom: 16,
+      color: theme.textPrimary,
+      fontFamily: Fonts.sans,
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 64,
+    },
+    emptyText: {
+      fontSize: 16,
+      color: theme.textSecondary,
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    recipeCard: {
+      borderWidth: 1,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+    },
+    recipeName: {
+      fontSize: 20,
+      fontWeight: '700',
+      marginBottom: 12,
+      color: theme.textPrimary,
+      fontFamily: Fonts.sans,
+    },
+    ingredientRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 6,
+    },
+    checkbox: {
+      marginRight: 8,
+      fontSize: 16,
+    },
+    ingredientName: {
+      fontSize: 16,
+      color: theme.textPrimary,
+      fontFamily: Fonts.sans,
+    },
+    missingCount: {
+      marginTop: 8,
+      fontSize: 14,
+      fontWeight: '600',
+      color: theme.accent,
+    },
+    calendarButton: {
+      marginTop: 12,
+      paddingVertical: 12,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    calendarButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
+      fontFamily: Fonts.sans,
+    },
+    blurOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    overlayContent: {
+      width: '90%',
+      borderRadius: 12,
+      padding: 16,
+      
+    },
+    overlayText: {
+      fontSize: 16,
+      marginBottom: 12,
+      fontFamily: Fonts.sans,
+      alignContent: 'center'
+    },
+    upgradeButton: {
+      paddingVertical: 14,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    upgradeButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
+      fontFamily: Fonts.sans,
+    },
+  });
 
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 16,
-    fontFamily: Fonts.sans,
-  },
-
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  emptyText: {
-    fontSize: 16,
-    textAlign: 'center',
-    fontFamily: Fonts.sans,
-  },
-
-  list: {
-    paddingBottom: 200,
-  },
-
-  recipeCard: {
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-  },
-
-  recipeName: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-    fontFamily: Fonts.sans,
-  },
-
-  ingredientRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-
-  checkbox: {
-    marginRight: 8,
-    fontSize: 16,
-  },
-
-  ingredientName: {
-    fontSize: 16,
-    fontFamily: Fonts.sans,
-  },
-
-  missingCount: {
-    marginTop: 4,
-    fontSize: 14,
-    fontFamily: Fonts.sans,
-  },
-
-  calendarButton: {
-    marginTop: 8,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-
-  calendarButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: Fonts.sans,
-  },
-
-  blurOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-  },
-
-  overlayContent: {
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    width: '90%',
-  },
-
-  overlayText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 16,
-    fontFamily: Fonts.sans,
-  },
-
-  upgradeButton: {
-    paddingVertical: 14,
-    borderRadius: 12,
-    width: '100%',
-    alignItems: 'center',
-  },
-
-  upgradeButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: Fonts.sans,
-  },
-
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-
-  modalContent: {
-    width: '90%',
-    borderRadius: 12,
-    padding: 16,
-  },
-
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 12,
-    fontFamily: Fonts.sans,
-  },
-
-  modalText: {
-    fontSize: 16,
-    marginBottom: 8,
-    fontFamily: Fonts.sans,
-  },
-
-  modalLink: {
-    fontSize: 14,
-    marginBottom: 16,
-    fontFamily: Fonts.sans,
-    textDecorationLine: 'underline',
-  },
-
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
-  confirmButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginRight: 8,
-  },
-
-  confirmButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: Fonts.sans,
-  },
-
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    marginLeft: 8,
-  },
-
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: Fonts.sans,
-  },
-
-});
-
-  
   

@@ -134,7 +134,9 @@ export default function AddRecipeScreen() {
               contentContainerStyle={styles.container}
               keyboardShouldPersistTaps="handled"
             >
+            <View style={styles.contentWrapper}>
               {content}
+            </View>
             </ScrollView>
           </TouchableWithoutFeedback>
         ) : (
@@ -161,7 +163,15 @@ const createStyles = (theme: ThemeType) =>
     container: {
       flexGrow: 1,
       paddingHorizontal: 24,
+      paddingTop: 16, // ensures content starts below the SafeArea/notch
+      paddingBottom: 24, 
     },
+
+    contentWrapper: {
+      flex: 1,
+      justifyContent: 'flex-start',
+    },
+
 
     title: {
       fontSize: 28,
