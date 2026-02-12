@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
@@ -14,23 +15,22 @@ import * as Calendar from 'expo-calendar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRecipes, Recipe } from '@/data/recipes-context';
 import Purchases from 'react-native-purchases';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { lightTheme, darkTheme, Fonts } from '@/constants/theme';
+import { useTheme } from '@/context/ThemeProvider'; // global theme
+import { Fonts } from '@/constants/theme';
 
 export default function GroceryListScreen() {
   const { recipes, toggleIngredient } = useRecipes();
-
-  
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = colorScheme === 'dark' ? darkTheme : lightTheme;
-  
+  const { theme } = useTheme();
 
   const [isPro, setIsPro] = useState(false);
+
+  // --- Calendar selection state ---
   const [showPicker, setShowPicker] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // --- RevenueCat: check purchase status & listen for updates
+  // --- RevenueCat: check purchase status & listen for updates ---
   useEffect(() => {
     const updateProStatus = async () => {
       try {
@@ -54,7 +54,7 @@ export default function GroceryListScreen() {
     };
   }, []);
 
-  // --- Upgrade / restore purchase handlers
+  // --- Upgrade / restore purchase handlers ---
   const handleUpgrade = async () => {
     try {
       const offerings = await Purchases.getOfferings();
@@ -79,28 +79,27 @@ export default function GroceryListScreen() {
     }
   };
 
-  // --- Count missing ingredients for a recipe
+  // --- Count missing ingredients for a recipe ---
   const countMissingIngredients = (recipe: Recipe) =>
     recipe.ingredients.filter(ing => !ing.hasIt).length;
 
-  // --- Open DateTimePicker for calendar event
+  // --- Open DateTimePicker for calendar event ---
   const handlePickDate = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
     setSelectedDate(new Date());
     setShowPicker(true);
   };
 
-  // --- When user selects a date/time from picker
-  const onDateChange = async (event: any, date?: Date) => {
+  // --- When user selects a date/time from picker ---
+  const onDateChange = (event: any, date?: Date) => {
     setShowPicker(false);
     if (date && selectedRecipe) {
       setSelectedDate(date);
-      await addToCalendar(selectedRecipe, date);
-      setSelectedRecipe(null);
+      setShowConfirmModal(true); // open confirmation modal
     }
   };
 
-  // --- Add recipe to native calendar
+  // --- Add recipe to native calendar ---
   const addToCalendar = async (recipe: Recipe, date: Date) => {
     if (!isPro) return;
 
@@ -136,12 +135,19 @@ export default function GroceryListScreen() {
     }
   };
 
-  // --- Main content of screen
+  // --- Confirm adding to calendar ---
+  const handleConfirmCalendar = async () => {
+    if (selectedRecipe) {
+      await addToCalendar(selectedRecipe, selectedDate);
+    }
+    setShowConfirmModal(false);
+    setSelectedRecipe(null);
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      
-     <Text style={[styles.title, { color: theme.textPrimary }]}>Grocery List</Text> 
-  
+      <Text style={[styles.title, { color: theme.textPrimary }]}>Grocery List</Text>
+
       {recipes.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
@@ -203,7 +209,7 @@ export default function GroceryListScreen() {
           {!isPro && recipes.length > 1 && (
             <BlurView
               intensity={50}
-              tint={colorScheme === 'dark' ? 'dark' : 'light'}
+              tint={Platform.OS === 'ios' ? 'light' : 'light'}
               style={styles.blurOverlay}
             >
               <View style={[styles.overlayContent, { backgroundColor: theme.card }]}>
@@ -233,129 +239,241 @@ export default function GroceryListScreen() {
             <DateTimePicker
               value={selectedDate}
               mode="datetime"
-              display={Platform.OS === 'ios' ? 'inline' : 'default'}
+              display="default"
               onChange={onDateChange}
             />
           )}
+
+          {/* Confirmation modal */}
+          <Modal visible={showConfirmModal} transparent animationType="slide">
+            <View style={styles.modalOverlay}>
+              <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+                <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>
+                  Confirm Calendar Event
+                </Text>
+                <Text style={[styles.modalText, { color: theme.textPrimary }]}>
+                  Recipe: {selectedRecipe?.name}
+                </Text>
+                <Text style={[styles.modalText, { color: theme.textPrimary }]}>
+                  Date: {selectedDate.toLocaleString()}
+                </Text>
+                <Text style={[styles.modalText, { color: theme.textPrimary }]}>
+                  Ingredients:
+                  {'\n'}
+                  {selectedRecipe?.ingredients.map(i => `• ${i.name}`).join('\n')}
+                </Text>
+
+                <Text style={[styles.modalLink, { color: theme.accent }]}>
+                  Link: cooknow://recipe/{selectedRecipe?.id}
+                </Text>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.confirmButton, { backgroundColor: theme.accent }]}
+                    onPress={handleConfirmCalendar}
+                  >
+                    <Text style={[styles.confirmButtonText, { color: theme.buttonText }]}>
+                      Add to Calendar
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.cancelButton, { borderColor: theme.accent }]}
+                    onPress={() => setShowConfirmModal(false)}
+                  >
+                    <Text style={[styles.cancelButtonText, { color: theme.accent }]}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
         </ScrollView>
       )}
     </SafeAreaView>
   );
 }
 
-// --- Styles
-const styles = StyleSheet.create({ 
+const styles = StyleSheet.create({
 
-  container: { 
-    flex: 1, 
-    paddingHorizontal: 16, 
-    paddingTop: 16 
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
 
-  title: { 
-    fontSize: 28, 
-    fontWeight: '700', 
-    marginBottom: 16, 
-    fontFamily: Fonts.sans 
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 16,
+    fontFamily: Fonts.sans,
   },
 
-  emptyContainer: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
-  emptyText: { 
-    fontSize: 16, 
-    textAlign: 'center', 
-    fontFamily: Fonts.sans 
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+    fontFamily: Fonts.sans,
   },
 
-  list: { 
-    paddingBottom: 200 
+  list: {
+    paddingBottom: 200,
   },
 
-  recipeCard: { 
-    padding: 12, 
-    borderRadius: 12, 
-    marginBottom: 16, 
-    borderWidth: 1 
+  recipeCard: {
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
   },
 
-  recipeName: { 
-    fontSize: 18, 
-    fontWeight: '600', 
-    marginBottom: 8, 
-    fontFamily: Fonts.sans 
+  recipeName: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    fontFamily: Fonts.sans,
   },
 
-  ingredientRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 4 
+  ingredientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
   },
 
-  checkbox: { 
-    marginRight: 8, 
-    fontSize: 16 
+  checkbox: {
+    marginRight: 8,
+    fontSize: 16,
   },
 
-  ingredientName: { 
-    fontSize: 16, 
-    fontFamily: Fonts.sans 
+  ingredientName: {
+    fontSize: 16,
+    fontFamily: Fonts.sans,
   },
 
-  missingCount: { 
-    marginTop: 4, 
-    fontSize: 14, 
-    fontFamily: Fonts.sans 
+  missingCount: {
+    marginTop: 4,
+    fontSize: 14,
+    fontFamily: Fonts.sans,
   },
 
-  calendarButton: { 
-    marginTop: 8, 
-    paddingVertical: 8, 
-    borderRadius: 8, 
-    alignItems: 'center' 
+  calendarButton: {
+    marginTop: 8,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
   },
 
-  calendarButtonText: { 
-    fontSize: 14, 
-    fontWeight: '600', 
-    fontFamily: Fonts.sans 
+  calendarButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    fontFamily: Fonts.sans,
   },
 
-  blurOverlay: { 
-    ...StyleSheet.absoluteFillObject, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    paddingHorizontal: 24 
+  blurOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
   },
 
-  overlayContent: { 
-    borderRadius: 12, 
-    padding: 16, 
-    alignItems: 'center', 
-    width: '90%' 
+  overlayContent: {
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    width: '90%',
   },
 
-  overlayText: { 
-    fontSize: 16, 
-    textAlign: 'center', 
-    marginBottom: 16, 
-    fontFamily: Fonts.sans 
+  overlayText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 16,
+    fontFamily: Fonts.sans,
   },
 
-  upgradeButton: { 
-    paddingVertical: 14, 
-    borderRadius: 12, 
-    width: '100%', 
-    alignItems: 'center' 
+  upgradeButton: {
+    paddingVertical: 14,
+    borderRadius: 12,
+    width: '100%',
+    alignItems: 'center',
   },
 
-  upgradeButtonText: { 
-    fontSize: 16, 
-    fontWeight: '600', 
-    fontFamily: Fonts.sans 
+  upgradeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: Fonts.sans,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+
+  modalContent: {
+    width: '90%',
+    borderRadius: 12,
+    padding: 16,
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 12,
+    fontFamily: Fonts.sans,
+  },
+
+  modalText: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontFamily: Fonts.sans,
+  },
+
+  modalLink: {
+    fontSize: 14,
+    marginBottom: 16,
+    fontFamily: Fonts.sans,
+    textDecorationLine: 'underline',
+  },
+
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  confirmButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginRight: 8,
+  },
+
+  confirmButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: Fonts.sans,
+  },
+
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    marginLeft: 8,
+  },
+
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: Fonts.sans,
   },
 
 });

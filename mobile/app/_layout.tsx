@@ -1,4 +1,11 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import {
+  DarkTheme as NavigationDarkTheme,
+  DefaultTheme as NavigationDefaultTheme,
+  ThemeProvider as NavigationThemeProvider,
+} from '@react-navigation/native';
+
+import { ThemeProvider as AppThemeProvider } from '@/context/ThemeProvider';
+
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
@@ -36,10 +43,14 @@ export default function RootLayout() {
   }, []);
 
 
-
-  return (
-    <RecipesProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+return (
+  <RecipesProvider>
+    <AppThemeProvider>
+      <NavigationThemeProvider
+        value={colorScheme === 'dark'
+          ? NavigationDarkTheme
+          : NavigationDefaultTheme}
+      >
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen
@@ -47,9 +58,11 @@ export default function RootLayout() {
             options={{ presentation: 'modal', title: 'Modal' }}
           />
         </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </RecipesProvider>
-  );
-}
 
+        <StatusBar style="auto" />
+      </NavigationThemeProvider>
+    </AppThemeProvider>
+  </RecipesProvider>
+);
+
+}
