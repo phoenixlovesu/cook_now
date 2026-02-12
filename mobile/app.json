@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Cook Now",
+    "name": "Cook Now - Recipes & Grocery",
     "slug": "cook-now",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
@@ -19,6 +19,7 @@
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to you camera to scan ingredients.",
         "NSPhotoLibraryUsageDescription": "This app needs access to you photos to upload recipe images.",
+        "NSCalendarsUsageDescription": "Cook Now uses calendar access to schedule selected recipes.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
