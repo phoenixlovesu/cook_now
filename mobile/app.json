@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.aminahkargbo.cooknow",
-      "buildNumber": "1",
+      "buildNumber": "3",
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to you camera to scan ingredients.",
         "NSPhotoLibraryUsageDescription": "This app needs access to you photos to upload recipe images.",
@@ -44,8 +44,6 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "resizeMode": "cover",
           "backgroundColor": "#4E908A"
         }
       ]

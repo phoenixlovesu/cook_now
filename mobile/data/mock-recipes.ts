@@ -147,7 +147,7 @@ export const MOCK_RECIPES: Recipe[] = [
 2. Fry until crunchy.
 3. Serve with homemade pickles.`,
     link: 'https://www.eitanbernath.com/2022/12/09/popcorn-chicken-two-ways-with-homemade-pickles/',
-    image: 'https://www.pexels.com/phhttps://images.pexels.com/photos/5923475/pexels-photo-5923475.jpeg/',
+    image: 'https://pixabay.com/images/download/sparow2011sm-fried-chicken-5703619_1920.jpg',
     source: 'mock',
   },
   {
